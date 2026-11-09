@@ -112,7 +112,6 @@
   "remaining_limitations": [
     "GitHub push failed because HTTPS authentication is unavailable; the empty remote has not received this commit or run CI.",
     "Render connector/account access is unavailable; no cloud services, URL, alerts, or cloud deployment results exist yet.",
-    "Blueprint creates paid resources; review the actual Render cost estimate and authorize provisioning.",
     "Rotate the database password previously shared in chat before a public launch; update both local and Render secrets.",
     "Cloud ingress client-IP behavior and non-root avatar disk permissions must be verified on Render; Docker-volume tests do not prove Render mount ownership.",
     "Real Render auth/avatar/sample-run/submission flow for all three languages, worker health and shutdown, traffic load, backups and restore drill remain unverified.",
@@ -124,7 +123,13 @@
     "branch": "main",
     "local_commit_created": true,
     "push_succeeded": false,
-    "push_error": "GitHub HTTPS username/credentials unavailable; interactive prompts disabled",
+    "push_error": "Retry after deployment authorization failed: GitHub HTTPS credentials unavailable; terminal prompts disabled",
     "remote_changed": false
+  },
+  "deployment_authorization": {
+    "authorized": true,
+    "date": "2026-11-10",
+    "scope": "Previously reviewed Render Blueprint: paid API, worker, Key Value and 1 GB disk; user instructed deploy it.",
+    "additional_provisioning_approval_required": false
   }
 }
