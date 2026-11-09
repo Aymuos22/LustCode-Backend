@@ -1,7 +1,7 @@
 {
   "date": "2026-11-10",
   "base_url": "https://lustcode-backend.onrender.com/api/v1",
-  "status": "free_configuration_applied_deployment_pending",
+  "status": "passed_free_tier_live_verification",
   "budget": "free resources only; user declined billing setup",
   "account_access": "Authenticated official Render CLI; token stored privately outside repository",
   "api": {
@@ -12,7 +12,8 @@
     "health_check": "/api/v1/health/ready",
     "environment": "production",
     "cors": "all origins, cookie credentials disabled",
-    "embedded_worker": true
+    "embedded_worker": true,
+    "audit_only_commits_trigger_deploy": false
   },
   "key_value": {
     "id": "red-dbp2lp8m7kps7395e0s0",
@@ -87,12 +88,192 @@
       "message": "Rate limiter unavailable"
     }
   },
-  "executions": [],
+  "executions": [
+    {
+      "case": "custom_python",
+      "language": "python",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "custom_java",
+      "language": "java",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "custom_cpp",
+      "language": "cpp",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "custom_design",
+      "language": "python",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "playground_starter_python",
+      "language": "python",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "playground_starter_java",
+      "language": "java",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "playground_starter_cpp",
+      "language": "cpp",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "existing_samples",
+      "language": "python",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "wrong_answer",
+      "language": "python",
+      "status": "wrong_answer",
+      "passed": true
+    },
+    {
+      "case": "compilation_error",
+      "language": "java",
+      "status": "compilation_error",
+      "passed": true
+    },
+    {
+      "case": "runtime_error",
+      "language": "python",
+      "status": "runtime_error",
+      "passed": true
+    },
+    {
+      "case": "python_correct",
+      "language": "python",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "java_correct",
+      "language": "java",
+      "status": "accepted",
+      "passed": true
+    },
+    {
+      "case": "cpp_correct",
+      "language": "cpp",
+      "status": "accepted",
+      "passed": true
+    }
+  ],
   "limitations": [
     "Free web services sleep on inactivity; execution resumes when the API wakes.",
     "Free Redis loses rate/quota/cache data on restart.",
     "Free filesystem means avatar uploads do not persist through restart, redeploy, or sleep.",
     "Public Judge0 has external capacity/availability limits.",
-    "Live execution checks are still pending the new deployment."
-  ]
+    "This verifies representative live flows and three language runtimes, not a traffic load test or every question against all possible inputs."
+  ],
+  "checked_at": "2026-11-09T22:16:33.141932+00:00",
+  "deployed_source_commit": "da68f15",
+  "deploy_id": "dep-dbp48vp5efls73apb52g",
+  "checks": {
+    "liveness": {
+      "http_status": 200,
+      "passed": true
+    },
+    "readiness": {
+      "http_status": 200,
+      "passed": true
+    },
+    "catalog": {
+      "http_status": 200,
+      "passed": true,
+      "total": 300
+    },
+    "languages": {
+      "http_status": 200,
+      "passed": true,
+      "available_languages": [
+        "cpp",
+        "java",
+        "python"
+      ]
+    },
+    "production_docs": {
+      "http_status": 404,
+      "passed": true
+    },
+    "private_profile_without_auth": {
+      "http_status": 401,
+      "passed": true
+    },
+    "cors_external": {
+      "http_status": 200,
+      "allow_origin": "*",
+      "allow_credentials": false,
+      "passed": true
+    },
+    "cors_react_local": {
+      "http_status": 200,
+      "allow_origin": "*",
+      "allow_credentials": false,
+      "passed": true
+    }
+  },
+  "frontend_flow": {
+    "report": "audit/render_frontend_flow.json",
+    "status": "passed",
+    "executions": 8,
+    "checks": {
+      "catalog_topics_collections_random_featured_navigation": "passed",
+      "draft_conflict_and_reset": "passed",
+      "preferences": "passed",
+      "avatar_upload_public_read_and_removal": "passed",
+      "runs_drafts_preferences_avatars_do_not_change_graded_statistics_or_progress": "passed"
+    }
+  },
+  "judging_flow": {
+    "report": "audit/render_judging_flow.json",
+    "status": "passed",
+    "submissions": 6,
+    "checks": {
+      "health": "passed",
+      "catalog": {
+        "ready": 283,
+        "unsupported": 17,
+        "languages": [
+          "python",
+          "java",
+          "cpp"
+        ]
+      },
+      "public_contracts_and_privacy": "passed",
+      "sql_shell_closed": "passed",
+      "incorrect_solutions_award_no_solved_credit": "passed",
+      "solve_once_across_languages": "passed",
+      "private_results_redacted": "passed",
+      "history": 81
+    }
+  },
+  "auth_flow": {
+    "status": "passed",
+    "login": 200,
+    "refresh_rotation": 200,
+    "authenticated_profile": 200,
+    "logout": 204,
+    "refresh_after_logout": 401,
+    "invalid_access_token": 401,
+    "credentials_recorded": false
+  },
+  "execution_isolation": "Local Docker worker lustcode-worker-1 was stopped throughout live run/submission verification. Render logs confirm embedded evaluator startup.",
+  "paid_resources_created": false,
+  "render_billing_details_added": false
 }

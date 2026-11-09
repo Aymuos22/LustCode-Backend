@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "login": 200,
+  "refresh_rotation": 200,
+  "authenticated_profile": 200,
+  "logout": 204,
+  "refresh_after_logout": 401,
+  "invalid_access_token": 401,
+  "credentials_recorded": false
+}

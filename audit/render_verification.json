@@ -1,29 +1,28 @@
 {
   "verified_at": "2026-11-10",
-  "status": "startup_ca_fix_verified_cloud_redeploy_pending",
-  "cloud_deployed": false,
+  "status": "live_free_tier_verified",
+  "cloud_deployed": true,
   "github_repository": "https://github.com/Aymuos22/LustCode-Backend",
   "configuration": {
     "services": [
-      "lustcode-api",
-      "lustcode-worker",
+      "LustCode-Backend",
       "lustcode-redis"
     ],
     "region": "singapore",
-    "web_and_worker_plan": "0.5c-512mb",
-    "key_value_plan": "256mb",
-    "avatar_disk_gb": 1,
-    "cors": "all origins; cross-origin cookie credentials disabled; private endpoints require bearer authentication",
-    "database": "existing Supabase, verified TLS, session pooler 5432",
-    "migrations": "serialized PostgreSQL advisory transaction lock; both pre-deploy jobs"
+    "plans": "free",
+    "worker": "opt-in embedded evaluator in API process",
+    "database": "existing Supabase, verified TLS, session pooler5432",
+    "migrations": "serialized release before API startup via python -m app.free_serve",
+    "cors": "all origins; cookie credentials disabled; protected endpoints require bearer authentication",
+    "avatars": "ephemeral filesystem on free compute",
+    "redis": "private free Key Value, noeviction, nonpersistent"
   },
   "checks": {
     "pytest": {
-      "passed": 342,
+      "passed": 350,
       "failed": 0,
       "skipped": 0,
-      "seconds": 42.26,
-      "command": "TEST_DATABASE_URL=<disposable PostgreSQL URL> .venv/bin/pytest -q"
+      "seconds": 38.97
     },
     "final_blueprint_and_deployment_tests": {
       "passed": 24,
@@ -31,10 +30,10 @@
       "skipped": 0,
       "seconds": 1.27
     },
-    "ruff": "passed; 101 Python files formatted",
-    "mypy": "passed; 65 application source files",
+    "ruff": "passed; 104 files formatted",
+    "mypy": "passed; 67 application source files",
     "pip_check": "passed; no broken requirements",
-    "docker_build": "passed; lustcode-backend:render-ca-fix",
+    "docker_build": "passed; lustcode-backend:free-test",
     "blueprint_schema": {
       "status": "passed",
       "source": "https://render.com/schema/render.yaml.json",
@@ -73,7 +72,9 @@
       "volume_persists_across_container_recreation": true,
       "scope": "Local Docker in production mode, real existing Supabase over verified TLS, isolated Redis, named avatar volume; no live Render service.",
       "initial_probe_note": "Initial three-second configuration returned sanitized503 during cold Supabase connection; Blueprint was changed to four seconds and cold/recreated probes returned200."
-    }
+    },
+    "render_live": "passed; audit/render_live_verification.json; 14 live execution scenarios plus account/frontend feature checks",
+    "render_api_blueprint_validation": "free render.yaml validated successfully with authenticated Render CLI"
   },
   "issues_fixed": [
     "Fixed-port Docker startup replaced with validated Render PORT binding.",
@@ -111,13 +112,13 @@
     "scripts/verify_container_startup.py"
   ],
   "remaining_limitations": [
-    "Render dashboard access is unavailable. User-provided logs show an existing service attempted deployment but failed during TLS client initialization; the corrected image still needs deployment and live verification.",
-    "Rotate the database password previously shared in chat before a public launch; update both local and Render secrets.",
-    "Cloud ingress client-IP behavior and non-root avatar disk permissions must be verified on Render; Docker-volume tests do not prove Render mount ownership.",
-    "Real Render auth/avatar/sample-run/submission flow for all three languages, worker health and shutdown, traffic load, backups and restore drill remain unverified.",
-    "Public Judge0 availability/capacity is external; no new live provider execution was performed in this Render preparation.",
-    "One API instance with a disk has deployment downtime and cannot scale horizontally; object storage is needed before API replication.",
-    "Existing local avatars are not transferred automatically."
+    "Free web services sleep on inactivity; execution resumes when the API wakes.",
+    "Free Redis loses rate/quota/cache data on restart.",
+    "Free filesystem means avatar uploads do not persist through restart, redeploy, or sleep.",
+    "Public Judge0 has external capacity/availability limits.",
+    "This verifies representative live flows and three language runtimes, not a traffic load test or every question against all possible inputs.",
+    "No traffic load test, restore drill, or multi-client ingress rate-limit separation test was performed.",
+    "The existing Supabase password was not rotated by this task; coordinate credential rotation separately."
   ],
   "git": {
     "branch": "main",
@@ -126,19 +127,19 @@
     "transport": "SSH; existing GitHub account authentication",
     "push_remote": "git@github.com:Aymuos22/LustCode-Backend.git",
     "remote_changed": true,
-    "ci_status": "Not yet verified on GitHub; local checks passed as recorded."
+    "ci_status": "Source commit da68f15 passed GitHub CI before Render deployment."
   },
   "deployment_authorization": {
     "authorized": true,
     "date": "2026-11-10",
-    "scope": "Previously reviewed Render Blueprint: paid API, worker, Key Value and 1 GB disk; user instructed deploy it.",
-    "additional_provisioning_approval_required": false
+    "scope": "FREE resources only; user declined adding payment details. Paid Key Value attempt returned402 and created no resource.",
+    "paid_resources_created": false
   },
   "cloud_deployment_attempt_observed": {
-    "evidence": "User-provided Render deployment traceback for commit6eed3b4",
-    "last_observed_state": "startup_failed",
-    "failure": "FileNotFoundError while loading database TLS CA certificate",
-    "live_recovery_verified": false
+    "deployed_source_commit": "da68f15",
+    "deploy_id": "dep-dbp48vp5efls73apb52g",
+    "last_observed_state": "live",
+    "live_recovery_verified": true
   },
   "startup_ca_fix": {
     "date": "2026-11-10",
@@ -170,6 +171,10 @@
       "private_route_without_auth": 401,
       "graceful_shutdown_exit_code": 0
     },
-    "cloud_status": "Corrected image must be deployed on Render; no service URL or dashboard access is available for live recovery verification."
-  }
+    "cloud_status": "Resolved and verified live on Render with production TLS configuration."
+  },
+  "cloud_ready": true,
+  "service_url": "https://lustcode-backend.onrender.com",
+  "free_blueprint": "render.yaml",
+  "optional_paid_blueprint": "render.production.yaml (not deployed)"
 }
