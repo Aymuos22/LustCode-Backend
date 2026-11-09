@@ -59,14 +59,33 @@ headers must not determine rate-limit identity.
 
 ### Render deployment
 
-[`render.yaml`](render.yaml) provisions a Docker API, a separate Docker worker, and
+The default [`render.yaml`](render.yaml) uses **only free resources**: the existing
+`LustCode-Backend` web service plus private Render Key Value in Singapore. It sets
+`EMBEDDED_WORKER_ENABLED=true`, so the same durable PostgreSQL lease-based evaluator
+runs as an API background task. It starts with `python -m app.free_serve`, which runs
+serialized migrations before opening the API port because free services do not have
+pre-deploy jobs. A stopped evaluator makes readiness fail; an in-flight job interrupted
+by shutdown retains its lease and can recover after restart. Default application
+configuration still leaves this mode disabled for separate-worker deployments.
+
+This is a **demo deployment**, not a production availability guarantee. Free services
+sleep after 15 minutes without inbound traffic, and processing resumes after the API
+wakes. Free Redis loses quotas/cache contents on restart. Avatar files disappear on
+redeploy, restart, or sleep because free web services cannot attach persistent disks.
+Supabase retains users, questions, drafts, submissions and evaluation leases. Move
+avatars to durable object storage before relying on them across restarts. Render's
+workspace free-hour/build/bandwidth limits also apply; this configuration creates no
+paid resources. See [Render free-plan limitations](https://render.com/docs/free).
+
+The optional [`render.production.yaml`](render.production.yaml) provisions a Docker API,
+a separate Docker worker, and
 private persistent Render Key Value in Singapore, while retaining the existing
 Supabase database. API/worker each use `0.5c-512mb`, Key Value uses `256mb`, and the API
 has a 1 GB avatar disk. These are paid resources: review Render's displayed monthly
 estimate before creating the Blueprint. No cloud deployment is implied by this file.
 
 1. Connect Render to `https://github.com/Aymuos22/LustCode-Backend` and create a
-   Blueprint from `main` using this `render.yaml`.
+   Blueprint from `main` using `render.production.yaml` **only if paid compute is desired**.
 2. Enter `DATABASE_URL` in Render's secret prompt. Use the Supabase **session** pooler
    on port **5432**, with the `postgresql+asyncpg://` scheme and a percent-encoded
    password. The Docker image defaults `DATABASE_SSL_ROOT_CERT` to its packaged

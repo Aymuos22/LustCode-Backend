@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 from uuid import UUID
 
+from redis.asyncio import Redis
 from redis.exceptions import RedisError
 from sqlalchemy import update
 from sqlalchemy.exc import SQLAlchemyError
@@ -179,6 +180,31 @@ class EvaluationWorker:
         await self.process(submission)
         return True
 
+    async def run(self, redis: Redis, stop: asyncio.Event) -> None:
+        """Use the same durable lease loop in a dedicated process or an opt-in API task."""
+        logger.info("Evaluation worker started")
+        while not stop.is_set():
+            try:
+                if not await self.once() and not stop.is_set():
+                    try:
+                        await cast(Awaitable[object], redis.blpop("worker:wakeup", timeout=2))
+                    except RedisError:
+                        await asyncio.sleep(2)
+            except LeaseLost:
+                logger.warning("Evaluation lease transferred to another worker")
+            except SQLAlchemyError:
+                logger.exception("Database unavailable during evaluation; lease will recover")
+                try:
+                    await asyncio.wait_for(stop.wait(), timeout=2)
+                except TimeoutError:
+                    pass
+            except Exception:
+                logger.exception("Unexpected evaluation failure; lease will recover")
+                try:
+                    await asyncio.wait_for(stop.wait(), timeout=2)
+                except TimeoutError:
+                    pass
+
 
 async def main() -> None:
     configure_logging()
@@ -190,25 +216,7 @@ async def main() -> None:
     try:
         async with runtime_resources(settings) as resources:
             worker = EvaluationWorker(resources.sessions, resources.provider, settings)
-            logger.info("Evaluation worker started")
-            while not stop.is_set():
-                try:
-                    if not await worker.once():
-                        try:
-                            await cast(
-                                Awaitable[object], resources.redis.blpop("worker:wakeup", timeout=2)
-                            )
-                        except RedisError:
-                            await asyncio.sleep(2)
-                except LeaseLost:
-                    logger.warning("Evaluation lease transferred to another worker")
-                except SQLAlchemyError:
-                    logger.exception("Database unavailable during evaluation; lease will recover")
-                    await asyncio.sleep(2)
-                except Exception:
-                    # Process boundary: log classification, retain durable work for lease recovery.
-                    logger.exception("Unexpected evaluation failure; lease will recover")
-                    await asyncio.sleep(2)
+            await worker.run(resources.redis, stop)
     finally:
         for name in (signal.SIGINT, signal.SIGTERM):
             loop.remove_signal_handler(name)

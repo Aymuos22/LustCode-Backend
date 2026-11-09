@@ -1,13 +1,34 @@
-# Paid resources. Review the plans in Render before creating this Blueprint.
-# Supabase remains the database; enter its credential only in Render's secret prompt.
+# $0 demo configuration. Free Render services sleep; Redis and avatars are ephemeral.
+# For separate production compute and durable storage, see render.production.yaml.
 previews:
   generation: "off"
 
-envVarGroups:
-  - name: lustcode-production
+services:
+  - type: keyvalue
+    name: lustcode-redis
+    region: singapore
+    plan: free
+    ipAllowList: []
+    maxmemoryPolicy: noeviction
+    persistenceMode: "off"
+
+  - type: web
+    name: LustCode-Backend
+    runtime: docker
+    region: singapore
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: python -m app.free_serve
+    healthCheckPath: /api/v1/health/ready
+    autoDeployTrigger: checksPass
+    numInstances: 1
     envVars:
       - key: ENVIRONMENT
         value: production
+      - key: DATABASE_URL
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_SSL
@@ -18,6 +39,11 @@ envVarGroups:
         value: "3"
       - key: DATABASE_MAX_OVERFLOW
         value: "2"
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: lustcode-redis
+          property: connectionString
       - key: READINESS_TIMEOUT_SECONDS
         value: "4"
       - key: CORS_ALLOW_ALL_ORIGINS
@@ -26,78 +52,9 @@ envVarGroups:
         value: '["*"]'
       - key: JUDGE0_URL
         value: https://ce.judge0.com
-      - key: MAX_PENDING_SUBMISSIONS
-        value: "5"
-      - key: DAILY_SUBMISSIONS
-        value: "100"
-      - key: DAILY_TEST_EXECUTIONS
-        value: "1000"
-      - key: TRUSTED_PROXY_NETWORKS
-        # Render private ingress plus published Cloudflare ranges; never trust 0.0.0.0/0.
-        value: '["127.0.0.1/32","10.0.0.0/8","172.16.0.0/12","192.168.0.0/16","173.245.48.0/20","103.21.244.0/22","103.22.200.0/22","103.31.4.0/22","141.101.64.0/18","108.162.192.0/18","190.93.240.0/20","188.114.96.0/20","197.234.240.0/22","198.41.128.0/17","162.158.0.0/15","104.16.0.0/13","104.24.0.0/14","172.64.0.0/13","131.0.72.0/22","2400:cb00::/32","2606:4700::/32","2803:f800::/32","2405:b500::/32","2405:8100::/32","2a06:98c0::/29","2c0f:f248::/32"]'
+      - key: EMBEDDED_WORKER_ENABLED
+        value: "true"
       - key: TRUSTED_CLIENT_IP_HEADER
         value: cf-connecting-ip
-
-services:
-  - type: keyvalue
-    name: lustcode-redis
-    region: singapore
-    plan: 256mb
-    ipAllowList: []
-    maxmemoryPolicy: noeviction
-    persistenceMode: journal-snapshot
-
-  - type: web
-    name: lustcode-api
-    runtime: docker
-    region: singapore
-    plan: 0.5c-512mb
-    branch: main
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
-    dockerCommand: python -m app.serve
-    preDeployCommand: python -m app.release
-    healthCheckPath: /api/v1/health/ready
-    autoDeployTrigger: checksPass
-    numInstances: 1
-    disk:
-      name: lustcode-avatars
-      mountPath: /srv/lustcode/var/avatars
-      sizeGB: 1
-    envVars:
-      - fromGroup: lustcode-production
-      - key: DATABASE_URL
-        sync: false
-      - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: lustcode-redis
-          property: connectionString
-      - key: AVATAR_STORAGE_DIR
-        value: /srv/lustcode/var/avatars
-
-  - type: worker
-    name: lustcode-worker
-    runtime: docker
-    region: singapore
-    plan: 0.5c-512mb
-    branch: main
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
-    dockerCommand: python -m app.worker
-    preDeployCommand: python -m app.release
-    autoDeployTrigger: checksPass
-    numInstances: 1
-    maxShutdownDelaySeconds: 180
-    envVars:
-      - fromGroup: lustcode-production
-      - key: DATABASE_URL
-        fromService:
-          type: web
-          name: lustcode-api
-          envVarKey: DATABASE_URL
-      - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: lustcode-redis
-          property: connectionString
+      - key: TRUSTED_PROXY_NETWORKS
+        value: '["127.0.0.1/32","10.0.0.0/8","172.16.0.0/12","192.168.0.0/16","173.245.48.0/20","103.21.244.0/22","103.22.200.0/22","103.31.4.0/22","141.101.64.0/18","108.162.192.0/18","190.93.240.0/20","188.114.96.0/20","197.234.240.0/22","198.41.128.0/17","162.158.0.0/15","104.16.0.0/13","104.24.0.0/14","172.64.0.0/13","131.0.72.0/22","2a06:98c0::/29","2606:4700::/32","2400:cb00::/32","2803:f800::/32","2405:b500::/32","2405:8100::/32","2c0f:f248::/32"]'

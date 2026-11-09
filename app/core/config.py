@@ -58,6 +58,8 @@ class Settings(BaseSettings):
     max_memory_kb: int = Field(default=262144, ge=16384, le=524288)
     worker_lease_seconds: int = Field(default=180, ge=150)
     worker_max_attempts: int = Field(default=3, ge=1, le=10)
+    embedded_worker_enabled: bool = False
+    embedded_worker_shutdown_seconds: float = Field(default=10, ge=0.01, le=20)
     avatar_storage_dir: Path = Path("var/avatars")
     avatar_max_bytes: int = Field(default=262144, ge=1024, le=2097152)
 

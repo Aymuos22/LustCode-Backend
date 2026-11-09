@@ -20,6 +20,7 @@ from app.core.errors import AppError, ProviderError
 from app.core.logging import configure_logging
 from app.core.middleware import SecurityMiddleware
 from app.core.security import password_hasher
+from app.embedded_worker import embedded_worker
 from app.runtime import runtime_resources
 from app.schemas import ErrorResponse
 from app.services.health import check_readiness
@@ -44,7 +45,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.dummy_hash = await run_in_threadpool(
                 password_hasher.hash, secrets.token_hex(32)
             )
-            yield
+            async with embedded_worker(resources, config) as task:
+                app.state.embedded_worker_task = task
+                yield
 
     app = FastAPI(
         title="LustCode API",
@@ -151,6 +154,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/v1/health/ready", tags=["health"])
     async def ready(request: Request) -> dict[str, dict[str, str]]:
+        task = request.app.state.embedded_worker_task
+        if config.embedded_worker_enabled and (task is None or task.done()):
+            raise AppError("worker_unavailable", "Execution worker is unavailable", 503)
         await check_readiness(
             request.app.state.sessions, request.app.state.redis, config.readiness_timeout_seconds
         )

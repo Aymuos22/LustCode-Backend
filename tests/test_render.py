@@ -49,7 +49,7 @@ def scope(peer="10.1.2.3", **headers):
 def test_blueprint_matches_official_schema_and_production_settings():
     # Snapshot: https://render.com/schema/render.yaml.json, retrieved 2026-11-10.
     schema = json.loads((ROOT / "deploy/render.schema.json").read_text())
-    blueprint = yaml.safe_load((ROOT / "render.yaml").read_text())
+    blueprint = yaml.safe_load((ROOT / "render.production.yaml").read_text())
     Draft202012Validator(schema).validate(blueprint)
     shared = {
         item["key"].lower(): item["value"]

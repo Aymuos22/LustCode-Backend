@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-10",
+  "base_url": "https://lustcode-backend.onrender.com/api/v1",
+  "status": "free_configuration_applied_deployment_pending",
+  "budget": "free resources only; user declined billing setup",
+  "account_access": "Authenticated official Render CLI; token stored privately outside repository",
+  "api": {
+    "id": "srv-dbp1uvjm8hqs73dta6lg",
+    "plan": "free",
+    "region": "singapore",
+    "command": "python -m app.free_serve",
+    "health_check": "/api/v1/health/ready",
+    "environment": "production",
+    "cors": "all origins, cookie credentials disabled",
+    "embedded_worker": true
+  },
+  "key_value": {
+    "id": "red-dbp2lp8m7kps7395e0s0",
+    "name": "lustcode-redis",
+    "plan": "free",
+    "region": "singapore",
+    "status": "available",
+    "external_access": false,
+    "memory_policy": "noeviction",
+    "persistence": "off (free plan)"
+  },
+  "changes_applied_to_render": [
+    "Created free Key Value instance; paid creation rejected before any paid resource was created.",
+    "Configured private Redis URL, production TLS/CA settings, a fresh JWT secret, wildcard CORS, trusted proxy configuration, and embedded worker flag.",
+    "Configured health checks and CI-gated automatic deployments.",
+    "Retained the existing API service and URL. No paid compute, worker service, or persistent disk was created."
+  ],
+  "local_checks": {
+    "pytest": {
+      "passed": 350,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 38.97
+    },
+    "ruff": "passed; 104 files formatted",
+    "mypy": "passed; 67 application source files",
+    "docker_build": "passed; lustcode-backend:free-test",
+    "production_container_startup": "passed; packaged CA, verified TLS, UID10001, API/migration engine initialization",
+    "render_blueprint_validation": "passed via authenticated Render API; free configuration, two actions"
+  },
+  "previous_live_failure": {
+    "liveness": {
+      "http_status": 200,
+      "seconds": 0.152
+    },
+    "readiness": {
+      "http_status": 503,
+      "seconds": 0.542,
+      "error_code": "not_ready",
+      "message": "Required infrastructure is unavailable"
+    },
+    "catalog": {
+      "http_status": 503,
+      "seconds": 0.082,
+      "error_code": "infrastructure_unavailable",
+      "message": "Rate limiter unavailable"
+    },
+    "languages": {
+      "http_status": 503,
+      "seconds": 0.083,
+      "error_code": "infrastructure_unavailable",
+      "message": "Rate limiter unavailable"
+    },
+    "cors_external_frontend": {
+      "http_status": 400,
+      "allow_origin": null,
+      "allow_credentials": null
+    },
+    "cors_local_react": {
+      "http_status": 400,
+      "allow_origin": null,
+      "allow_credentials": null
+    },
+    "cors_local_3000": {
+      "http_status": 200,
+      "allow_origin": "http://localhost:3000",
+      "allow_credentials": null
+    },
+    "test_account_login": {
+      "http_status": 503,
+      "error_code": "infrastructure_unavailable",
+      "message": "Rate limiter unavailable"
+    }
+  },
+  "executions": [],
+  "limitations": [
+    "Free web services sleep on inactivity; execution resumes when the API wakes.",
+    "Free Redis loses rate/quota/cache data on restart.",
+    "Free filesystem means avatar uploads do not persist through restart, redeploy, or sleep.",
+    "Public Judge0 has external capacity/availability limits.",
+    "Live execution checks are still pending the new deployment."
+  ]
+}
