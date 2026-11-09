@@ -142,7 +142,7 @@
   },
   "startup_ca_fix": {
     "date": "2026-11-10",
-    "problem": "Native DATABASE_URL contains a CA certificate path from the developer computer; this file does not exist inside Render. The Blueprint supplies an override but a manually configured Docker service did not inherit that setting.",
+    "problem": "The Render traceback proves that the configured TLS CA file is unavailable. The supplied local DATABASE_URL contains a Mac certificate path, and that configuration reproduces the failure in the previous image when the container CA override is absent. The actual Render environment settings could not be inspected; an explicit stale runtime override must also be corrected.",
     "changes": [
       "Set the packaged CA path as a Docker image environment default, with explicit runtime overrides retaining precedence.",
       "Added a safe actionable TLS configuration error; invalid/unreadable certificates still stop initialization without disabling verification.",
