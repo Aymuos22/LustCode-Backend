@@ -1,0 +1,52 @@
+{
+  "checked_at": "2026-11-08T19:14:21.769939+00:00",
+  "migration_revision": "c869d03eecf9",
+  "tables": [
+    {
+      "tablename": "questions",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "refresh_tokens",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "submission_test_results",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "submissions",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "test_cases",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "user_progress",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "users",
+      "rowsecurity": true
+    }
+  ],
+  "seeded_questions": false,
+  "verified_at": "2026-11-08T19:21:49.792427+00:00",
+  "migration_applied": true,
+  "migration_drift": "none",
+  "api_and_worker_database": "Supabase",
+  "tls": "certificate_and_hostname_verified",
+  "compose_selected_by_default": true,
+  "certificate_mount": "read_only",
+  "local_database": "stopped_volume_preserved",
+  "readiness_budget_seconds": 8,
+  "automated_tests_passed": 175,
+  "live_languages": [
+    "python",
+    "java",
+    "cpp"
+  ],
+  "anonymous_and_authenticated_reads": "blocked_by_rls",
+  "temporary_verification_data_removed": true
+}

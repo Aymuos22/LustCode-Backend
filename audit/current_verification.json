@@ -1,0 +1,145 @@
+{
+  "checked_at": "2026-11-09T18:30:54.984921+00:00",
+  "status": "passed",
+  "suite_version": "authored-v3-visible-samples",
+  "questions": 300,
+  "judgeable_questions": 283,
+  "unsupported_sql_shell": 17,
+  "languages": [
+    "python",
+    "java",
+    "cpp"
+  ],
+  "test_cases": 2769,
+  "hidden_cases": 2146,
+  "visible_cases": 623,
+  "automated_tests": {
+    "passed": 316,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 51.8
+  },
+  "migration_revision": "e42b19c06d31",
+  "rls_enabled_tables": 9,
+  "database_suite_hashes": "passed",
+  "source_and_artifact_credentials_scan": "passed",
+  "live_submissions": {
+    "passed": 20,
+    "failed": 0,
+    "seconds": 400.25,
+    "all_snapshots_current": true,
+    "suite_version": "authored-v2-domain-validated",
+    "checked_at": "2026-11-09T06:50:05.403229+00:00",
+    "report": "audit/judging_live.json"
+  },
+  "deployment": {
+    "normal_workers": 1,
+    "temporary_verification_workers": 3,
+    "checks": {
+      "live": "ok",
+      "ready": "ready",
+      "catalog": {
+        "ready": 283,
+        "unsupported": 17
+      },
+      "api_worker_source_matches_workspace": true
+    }
+  },
+  "limitations": [
+    "Finite authored suites do not prove correctness for every possible input or asymptotic complexity.",
+    "Public Judge0 availability, quotas, compilation latency and throughput are external constraints.",
+    "Only representative real submissions were executed at Judge0; all 283 Python reference suites ran locally and all Java/C++ driver interfaces compiled locally.",
+    "Public domain validation formalizes bounds and selected promises, not every English-language constraint.",
+    "SQL/shell remain disabled by user choice.",
+    "Premium contracts are independently specified LustCode behavior, with no access to protected LeetCode cases.",
+    "The directory has no Git metadata; committed-secret history could not be audited.",
+    "No production load test or exhaustive cross-language solution execution was performed."
+  ],
+  "full_report": "audit/judging_verification.json",
+  "live_report": "audit/judging_live.json",
+  "schema_changed": false,
+  "question_data_seeded": true,
+  "previous_foundation_verification": {
+    "checked_at": "2026-11-08T19:29:33.787981+00:00",
+    "checks": {
+      "health_openapi_public_endpoints": "passed",
+      "cors_and_body_limits": "passed",
+      "registration_login_refresh_replay_logout_profiles": "passed",
+      "supabase_migrations_and_rls": "passed",
+      "redis_connectivity_atomic_quotas_rate_limits": "passed",
+      "private_history_progress_statistics": "passed"
+    },
+    "executions": [
+      {
+        "case": "python",
+        "language": "python",
+        "version": "Python (3.14.0)",
+        "status": "accepted",
+        "passed": true
+      },
+      {
+        "case": "java",
+        "language": "java",
+        "version": "Java (JDK 17.0.6)",
+        "status": "accepted",
+        "passed": true
+      },
+      {
+        "case": "cpp",
+        "language": "cpp",
+        "version": "C++ (GCC 14.1.0)",
+        "status": "accepted",
+        "passed": true
+      },
+      {
+        "case": "runtime_error",
+        "language": "python",
+        "version": "Python (3.14.0)",
+        "status": "runtime_error",
+        "passed": true
+      },
+      {
+        "case": "compilation_error",
+        "language": "java",
+        "version": "Java (JDK 17.0.6)",
+        "status": "compilation_error",
+        "passed": true
+      }
+    ],
+    "status": "passed",
+    "temporary_data_removed": true,
+    "automated_tests": {
+      "passed": 175,
+      "seconds": 18.0
+    },
+    "format_lint_typechecks": "passed",
+    "dependency_checks": "passed",
+    "migration_revision": "c869d03eecf9",
+    "migration_drift": "none",
+    "api_worker_source_matches_workspace": true,
+    "credentials_scan": "passed",
+    "schema_changed": false,
+    "question_data_seeded": false
+  },
+  "sample_runs": {
+    "passed": 11,
+    "failed": 0,
+    "sample_runs": 10,
+    "full_submission_rejection": 1,
+    "seconds": 274.75,
+    "report": "audit/sample_runs_live.json"
+  },
+  "sample_runs_report": "audit/sample_runs_verification.json",
+  "questions_with_executable_samples": 283,
+  "scanned_files": 129,
+  "frontend_features_report": "audit/frontend_features_verification.json",
+  "frontend_features": {
+    "implemented": 8,
+    "live_executions": 8,
+    "frontend_modified": false
+  },
+  "api_handoff": "FRONTEND_API_HANDOFF.md",
+  "title_branding_report": "audit/question_title_branding.json",
+  "branded_question_titles": 300,
+  "stronger_adult_taglines_updated": 108
+}

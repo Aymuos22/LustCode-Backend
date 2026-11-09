@@ -1,0 +1,382 @@
+{
+  "checked_at": "2026-11-09T18:30:54.984921+00:00",
+  "suite_version": "authored-v3-visible-samples",
+  "questions": 300,
+  "judgeable_questions": 283,
+  "unsupported_sql_shell": 17,
+  "test_cases": 2769,
+  "hidden_cases": 2146,
+  "main_bodies_preserved_verbatim": 300,
+  "database_suite_hashes": "passed",
+  "migration_revision": "e42b19c06d31",
+  "rls_enabled_tables": 9,
+  "idempotent_suite_reinstall": {
+    "created": 0,
+    "updated": 0,
+    "unchanged": 283,
+    "questions": 283,
+    "test_cases": 2769
+  },
+  "suite_reinstall_seconds": 1.96,
+  "catalog_reimport": {
+    "created": 0,
+    "updated": 0,
+    "unchanged": 300,
+    "total": 300
+  },
+  "source_and_artifact_credentials_scan": "passed",
+  "scanned_files": 129,
+  "credential_file_mode": "0600",
+  "status": "passed",
+  "languages": [
+    "python",
+    "java",
+    "cpp"
+  ],
+  "visible_cases": 623,
+  "independent_premium_contracts": 43,
+  "automated_tests": {
+    "passed": 316,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 51.8
+  },
+  "format_lint_types": "ruff format --check ., ruff check ., mypy app: passed",
+  "dependencies": "pip check passed",
+  "migrations": "upgrade/check/downgrade/re-upgrade passed in disposable PostgreSQL",
+  "driver_compilation": [
+    {
+      "language": "cpp",
+      "signatures": 283,
+      "passed": true
+    },
+    {
+      "language": "java",
+      "signatures": 283,
+      "passed": true
+    }
+  ],
+  "native_transport_checks": [
+    {
+      "language": "cpp",
+      "type": "integer",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "integer",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "double",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "double",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "boolean",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "boolean",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "string",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "string",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "character",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "character",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "integer[]",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "integer[]",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "integer[][]",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "integer[][]",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "string[]",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "string[]",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "boolean[]",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "boolean[]",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "character[][]",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "character[][]",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "list<string>",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "list<string>",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "list<list<integer>>",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "list<list<integer>>",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "list<list<string>>",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "list<list<string>>",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "ListNode[]",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "ListNode[]",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "list<TreeNode>",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "list<TreeNode>",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "TreeNode",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "TreeNode",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "type": "ListNode",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "ListNode",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "type": "integer[9000]",
+      "output_bytes": 18002,
+      "passed": true
+    }
+  ],
+  "live_submissions": {
+    "passed": 20,
+    "failed": 0,
+    "seconds": 400.25,
+    "all_snapshots_current": true,
+    "suite_version": "authored-v2-domain-validated",
+    "checked_at": "2026-11-09T06:50:05.403229+00:00",
+    "report": "audit/judging_live.json"
+  },
+  "deployment": {
+    "normal_workers": 1,
+    "temporary_verification_workers": 3,
+    "checks": {
+      "live": "ok",
+      "ready": "ready",
+      "catalog": {
+        "ready": 283,
+        "unsupported": 17
+      },
+      "api_worker_source_matches_workspace": true
+    }
+  },
+  "live_report": "audit/judging_live.json",
+  "debug_output_report": "audit/judging_debug_output.json",
+  "problems_fixed": [
+    "Imported function and class problems had no executable grading contracts or private suites.",
+    "Submissions needed language drivers, semantic comparators and pointer-aware fixture adapters.",
+    "Queued evaluations needed immutable contract and case snapshots.",
+    "Compiling fixture inputs into source could exceed Java method-size limits.",
+    "Diagnostic truncation and debug stdout could corrupt answer comparison.",
+    "Draft edge fixtures outside public constraints could unfairly reject valid solutions.",
+    "Catalog refreshes needed guards against unreviewed interface and constraint changes.",
+    "Question solution code could only run against the full suite; custom runs required complete stdin/stdout programs.",
+    "49 enabled questions had no executable visible sample.",
+    "Question-associated sample runs needed admission logic that never updates progress.",
+    "Result APIs needed visible input and expected-output snapshots for the sample result panel."
+  ],
+  "files_changed": {
+    "judging": [
+      "app/judging/__init__.py",
+      "app/judging/__main__.py",
+      "app/judging/adapters.py",
+      "app/judging/cases.py",
+      "app/judging/compare.py",
+      "app/judging/contracts.py",
+      "app/judging/design.py",
+      "app/judging/domains.py",
+      "app/judging/drivers.py",
+      "app/judging/extra_references.py",
+      "app/judging/generated_cases.py",
+      "app/judging/independent.py",
+      "app/judging/independent_cases.py",
+      "app/judging/node_runtimes.py",
+      "app/judging/readiness.py",
+      "app/judging/references.py",
+      "app/judging/runtimes.py",
+      "app/judging/special.py",
+      "app/judging/suites.py",
+      "app/judging/wire.py"
+    ],
+    "integration": [
+      "app/models.py",
+      "app/schemas.py",
+      "app/services/questions.py",
+      "app/services/submissions.py",
+      "app/worker.py",
+      "app/integrations/judge0.py",
+      "app/ingestion/catalog.py",
+      "app/diagnostics/judging.py",
+      "app/api/routes.py",
+      "app/diagnostics/sample_runs.py"
+    ],
+    "migration": [
+      "migrations/versions/d7e901a48b22_submission_evaluation_snapshot.py"
+    ],
+    "verification": [
+      "tests/test_judging.py",
+      "tests/test_judging_integration.py",
+      "tests/judging_reference_solutions.py",
+      "tests/conftest.py",
+      "tests/test_integration.py",
+      "scripts/verify_judging_compilers.py",
+      "scripts/verify_judging_transport.py",
+      "tests/test_sample_runs.py"
+    ],
+    "documentation_and_evidence": [
+      "README.md",
+      "VALIDATION.md",
+      "AUDIT.md",
+      "data/questions/README.md",
+      "audit/current_verification.json",
+      "audit/judging_verification.json",
+      "audit/judging_live.json",
+      "audit/judging_debug_output.json"
+    ]
+  },
+  "test_commands": [
+    "TEST_DATABASE_URL=postgresql+asyncpg://test:test@localhost:55432/lustcode_test pytest -q",
+    "ruff format --check .",
+    "ruff check .",
+    "mypy app",
+    "pip check",
+    "PYTHONPATH=. python scripts/verify_judging_compilers.py",
+    "PYTHONPATH=. python scripts/verify_judging_transport.py",
+    "python -m app.diagnostics.judging --timeout 900 --output audit/judging_live.json",
+    "python -m app.diagnostics.sample_runs --timeout 900 --output audit/sample_runs_live.json"
+  ],
+  "user_choices": {
+    "sql_shell": "browsable, judging disabled",
+    "premium_questions": "independent LustCode contracts and tests"
+  },
+  "limitations": [
+    "Finite authored suites do not prove correctness for every possible input or asymptotic complexity.",
+    "Public Judge0 availability, quotas, compilation latency and throughput are external constraints.",
+    "Only representative real submissions were executed at Judge0; all 283 Python reference suites ran locally and all Java/C++ driver interfaces compiled locally.",
+    "Public domain validation formalizes bounds and selected promises, not every English-language constraint.",
+    "SQL/shell remain disabled by user choice.",
+    "Premium contracts are independently specified LustCode behavior, with no access to protected LeetCode cases.",
+    "The directory has no Git metadata; committed-secret history could not be audited.",
+    "No production load test or exhaustive cross-language solution execution was performed."
+  ],
+  "sample_runs": {
+    "passed": 11,
+    "failed": 0,
+    "sample_runs": 10,
+    "full_submission_rejection": 1,
+    "seconds": 274.75,
+    "report": "audit/sample_runs_live.json"
+  },
+  "sample_runs_report": "audit/sample_runs_verification.json",
+  "driver_checks_evidence": {
+    "checked_at": "2026-11-09T06:50:05.403229+00:00",
+    "scope": "Existing compiler and native transport evidence; drivers and interfaces are unchanged by this sample-run change."
+  },
+  "frontend_features_report": "audit/frontend_features_verification.json",
+  "frontend_features": {
+    "implemented": 8,
+    "live_executions": 8,
+    "frontend_modified": false
+  },
+  "schema_changed": false,
+  "api_handoff": "FRONTEND_API_HANDOFF.md",
+  "title_branding_report": "audit/question_title_branding.json",
+  "branded_question_titles": 300,
+  "stronger_adult_taglines_updated": 108
+}

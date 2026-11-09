@@ -1,0 +1,70 @@
+name: lustcode
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lustcode
+      POSTGRES_PASSWORD: lustcode
+      POSTGRES_DB: lustcode
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lustcode -d lustcode"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: ["redis_data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  migrate:
+    build: .
+    image: lustcode-backend:local
+    env_file: .env
+    environment: &app_environment
+      DATABASE_URL: postgresql+asyncpg://lustcode:lustcode@db:5432/lustcode
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://lustcode:lustcode@db:5432/lustcode
+      DATABASE_SSL: "false"
+      REDIS_URL: redis://redis:6379/0
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db: {condition: service_healthy}
+  api:
+    build: .
+    image: lustcode-backend:local
+    env_file: .env
+    environment: *app_environment
+    ports: ["127.0.0.1:8000:8000"]
+    volumes: ["avatar_data:/srv/lustcode/var/avatars"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/ready', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    init: true
+  worker:
+    build: .
+    image: lustcode-backend:local
+    env_file: .env
+    environment: *app_environment
+    command: ["python", "-m", "app.worker"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 3m
+volumes:
+  avatar_data:
+  postgres_data:
+  redis_data:

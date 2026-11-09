@@ -1,0 +1,131 @@
+{
+  "checked_at": "2026-11-08T20:08:31.850641+00:00",
+  "base_url": "http://127.0.0.1:8000",
+  "account": {
+    "email": "test.account@example.com",
+    "username": "lustcode_test",
+    "retained": true,
+    "created": true,
+    "id": "fad56659-641c-4d6e-883e-98e159f6c5e2"
+  },
+  "checks": [
+    {
+      "check": "liveness_and_readiness",
+      "passed": true
+    },
+    {
+      "check": "incorrect_password_rejected",
+      "passed": true
+    },
+    {
+      "check": "registration_and_password_login",
+      "passed": true
+    },
+    {
+      "check": "private_profile_requires_authentication",
+      "passed": true
+    },
+    {
+      "check": "profile_update_persists_and_public_profile_hides_email",
+      "passed": true
+    },
+    {
+      "check": "catalog_browse_search_filters_and_detail",
+      "passed": true,
+      "total": 300
+    },
+    {
+      "check": "unknown_question_returns_404",
+      "passed": true
+    },
+    {
+      "check": "catalog_submission_returns_409_without_creating_job",
+      "passed": true
+    },
+    {
+      "check": "language_registry",
+      "passed": true,
+      "languages": [
+        "python",
+        "java",
+        "cpp"
+      ]
+    },
+    {
+      "check": "three_custom_runs_queued",
+      "passed": true,
+      "jobs": 3
+    },
+    {
+      "check": "python_java_cpp_execution_and_result_polling",
+      "passed": true
+    },
+    {
+      "check": "private_history_contains_runs_and_requires_login",
+      "passed": true,
+      "total": 3
+    },
+    {
+      "check": "custom_runs_do_not_award_question_progress_or_leaderboard_credit",
+      "passed": true
+    },
+    {
+      "check": "refresh_token_rotation",
+      "passed": true
+    },
+    {
+      "check": "logout_revokes_refresh_session",
+      "passed": true
+    }
+  ],
+  "runs": [
+    {
+      "id": "3b6b3b6d-d5e9-4b2d-9a55-442ee21ac362",
+      "language": "python",
+      "version": "Python (3.14.0)",
+      "status": "accepted",
+      "stdout_matches": true,
+      "passed": true
+    },
+    {
+      "id": "32c3b2fc-b649-49c8-b39c-92573a161454",
+      "language": "java",
+      "version": "Java (JDK 17.0.6)",
+      "status": "accepted",
+      "stdout_matches": true,
+      "passed": true
+    },
+    {
+      "id": "2e3379b8-7644-4c5a-9868-c81852243a47",
+      "language": "cpp",
+      "version": "C++ (GCC 14.1.0)",
+      "status": "accepted",
+      "stdout_matches": true,
+      "passed": true
+    }
+  ],
+  "credentials_file": ".env.test-account",
+  "credentials_permissions": "0600",
+  "status": "passed",
+  "limitations": [
+    "Catalog questions remain browsable only until verified drivers and test suites are added.",
+    "Logout revokes refresh tokens; existing access tokens expire at their normal short lifetime.",
+    "Public Judge0 availability and quotas are external dependencies."
+  ],
+  "finished_at": "2026-11-08T20:09:55.840142+00:00",
+  "persistence_and_credentials": {
+    "account_active": true,
+    "password_stored_as_argon2_hash": true,
+    "password_matches_local_credentials": true,
+    "credentials_permissions": "0600",
+    "credentials_covered_by_gitignore": true
+  },
+  "checks_passed": 15,
+  "changes": [
+    "Created and retained an ordinary test user in Supabase.",
+    "Saved generated credentials in private Git-ignored .env.test-account (0600).",
+    "Retained three successful custom runs in this account history.",
+    "Documented the account in README.md; no application code or schema changes."
+  ],
+  "sessions": "Refresh sessions issued for this verification were logged out."
+}

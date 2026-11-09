@@ -1,0 +1,31 @@
+# Hosted PostgreSQL with local Redis. Activate together with compose.yaml.
+x-supabase-environment: &supabase_environment
+  DATABASE_URL: ${DOCKER_DATABASE_URL:?Set DOCKER_DATABASE_URL to the verified Supabase URL}
+  MIGRATION_DATABASE_URL: ${DOCKER_MIGRATION_DATABASE_URL:-${DOCKER_DATABASE_URL}}
+  DATABASE_SSL: "true"
+  # A fresh remote TLS/authentication handshake can exceed the local 2s budget.
+  READINESS_TIMEOUT_SECONDS: ${DOCKER_READINESS_TIMEOUT_SECONDS:-8}
+
+services:
+  db:
+    profiles: [local-database]
+
+  migrate:
+    environment: *supabase_environment
+    depends_on: !reset {}
+    volumes:
+      - ./certs:/srv/lustcode/certs:ro
+
+  api:
+    environment: *supabase_environment
+    volumes:
+      - ./certs:/srv/lustcode/certs:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/ready', timeout=12)"]
+      timeout: 14s
+      start_period: 15s
+
+  worker:
+    environment: *supabase_environment
+    volumes:
+      - ./certs:/srv/lustcode/certs:ro

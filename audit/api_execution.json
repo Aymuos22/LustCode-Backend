@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-11-07T13:58:19.148364+00:00",
+  "endpoint": "http://localhost:8000",
+  "checks": [
+    {
+      "language": "python",
+      "version": "Python (3.14.0)",
+      "status": "accepted",
+      "stdout": "foundation:LustCode\n",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "version": "Java (JDK 17.0.6)",
+      "status": "accepted",
+      "stdout": "foundation:LustCode\n",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "version": "C++ (GCC 14.1.0)",
+      "status": "accepted",
+      "stdout": "foundation:LustCode\n",
+      "passed": true
+    }
+  ],
+  "temporary_account_and_runs_removed": true
+}

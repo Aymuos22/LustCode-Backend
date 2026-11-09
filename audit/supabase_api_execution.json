@@ -1,0 +1,34 @@
+{
+  "checked_at": "2026-11-08T19:18:47.092952+00:00",
+  "database": "Supabase PostgreSQL",
+  "checks": [
+    {
+      "language": "python",
+      "version": "Python (3.14.0)",
+      "status": "accepted",
+      "stdout": "foundation:LustCode\n",
+      "passed": true
+    },
+    {
+      "language": "java",
+      "version": "Java (JDK 17.0.6)",
+      "status": "accepted",
+      "stdout": "foundation:LustCode\n",
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "version": "C++ (GCC 14.1.0)",
+      "status": "accepted",
+      "stdout": "foundation:LustCode\n",
+      "passed": true
+    }
+  ],
+  "authenticated_profile": "passed",
+  "refresh_rotation": "passed",
+  "anon_direct_read": "denied_by_rls",
+  "authenticated_direct_read": "denied_by_rls",
+  "private_history": "passed",
+  "logout_revocation": "passed",
+  "temporary_account_and_runs_removed": true
+}

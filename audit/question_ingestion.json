@@ -1,0 +1,170 @@
+{
+  "checked_at": "2026-11-08T20:06:10.801211+00:00",
+  "status": "passed",
+  "scope": "Published browsable catalog; execution drivers and verified test suites excluded by user choice",
+  "bundle": "data/questions/leetcode_001_300.json",
+  "bundle_sha256": "8df05b5e53205493e9ab78c42b31f666602728a8d51e545a761105c9749d5c2e",
+  "source_workbook_sha256": "154575d555097fd9fc7279e67311eaffa13933aeee9fcec8702532c8785e3fd7",
+  "public_metadata_fetched_at": "2026-11-08T19:56:21.477968+00:00",
+  "official_source": "https://leetcode.com/graphql/",
+  "questions": 300,
+  "published": 300,
+  "main_statements_preserved_verbatim": 300,
+  "test_cases": 0,
+  "judgeable_questions": 0,
+  "difficulty": {
+    "easy": 77,
+    "medium": 173,
+    "hard": 50
+  },
+  "details": {
+    "public": 257,
+    "premium": 43
+  },
+  "examples": 606,
+  "with_constraints": 241,
+  "interfaces": {
+    "function": 231,
+    "design": 9,
+    "unknown": 43,
+    "sql": 13,
+    "shell": 4
+  },
+  "first_import": {
+    "created": 300,
+    "updated": 0,
+    "unchanged": 0
+  },
+  "second_import": {
+    "created": 0,
+    "updated": 0,
+    "unchanged": 300,
+    "total": 300
+  },
+  "live_api": {
+    "health_live": "passed",
+    "health_ready": "passed",
+    "three_pages_total": 300,
+    "source_numeric_order": "passed",
+    "difficulty_filters": "passed",
+    "search": "passed",
+    "empty_fourth_page": "passed",
+    "private_provenance_hidden": "passed",
+    "details": [
+      {
+        "source_id": 1,
+        "status": 200,
+        "main_body_verbatim": true,
+        "is_judgeable": false
+      },
+      {
+        "source_id": 28,
+        "status": 200,
+        "main_body_verbatim": true,
+        "is_judgeable": false
+      },
+      {
+        "source_id": 146,
+        "status": 200,
+        "main_body_verbatim": true,
+        "is_judgeable": false
+      },
+      {
+        "source_id": 175,
+        "status": 200,
+        "main_body_verbatim": true,
+        "is_judgeable": false
+      },
+      {
+        "source_id": 192,
+        "status": 200,
+        "main_body_verbatim": true,
+        "is_judgeable": false
+      },
+      {
+        "source_id": 271,
+        "status": 200,
+        "main_body_verbatim": true,
+        "is_judgeable": false
+      },
+      {
+        "source_id": 284,
+        "status": 200,
+        "main_body_verbatim": true,
+        "is_judgeable": false
+      },
+      {
+        "source_id": 300,
+        "status": 200,
+        "main_body_verbatim": true,
+        "is_judgeable": false
+      }
+    ]
+  },
+  "credentials_scan_new_source_and_dataset": "passed",
+  "schema_changed": false,
+  "limitations": [
+    "Catalog is not judgeable until language drivers and verified private test suites are added.",
+    "43 premium entries have only public catalog metadata and supplied main text.",
+    "13 SQL and 4 shell entries have no backend execution language.",
+    "Four shell file examples were not converted into conventional input/output pairs.",
+    "User-provided statements are preserved, not independently validated for algorithmic completeness."
+  ],
+  "automated_tests": {
+    "passed": 202,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 22.74,
+    "database": "Disposable PostgreSQL 16, separate schemas",
+    "external_dependencies": "Mocked HTTPX/provider and fakeredis"
+  },
+  "checks": {
+    "format": "passed (56 repository Python files)",
+    "lint": "passed",
+    "mypy": "passed (34 source files)",
+    "pip_check": "passed",
+    "docker_build": "passed",
+    "compose_deployment": "passed"
+  },
+  "containers": [
+    {
+      "service": "api",
+      "state": "running",
+      "health": "healthy"
+    },
+    {
+      "service": "redis",
+      "state": "running",
+      "health": "healthy"
+    },
+    {
+      "service": "worker",
+      "state": "running",
+      "health": ""
+    }
+  ],
+  "files_changed": [
+    "app/ingestion/__init__.py",
+    "app/ingestion/__main__.py",
+    "app/ingestion/workbook.py",
+    "app/ingestion/leetcode.py",
+    "app/ingestion/catalog.py",
+    "app/schemas.py",
+    "app/repositories.py",
+    "app/services/questions.py",
+    "app/api/routes.py",
+    "data/questions/leetcode_001_300.json",
+    "data/questions/README.md",
+    "tests/__init__.py",
+    "tests/test_ingestion.py",
+    "tests/test_ingestion_integration.py",
+    "pyproject.toml",
+    "requirements-dev.lock",
+    "requirements-ingest.lock",
+    "README.md",
+    "VALIDATION.md",
+    "AUDIT.md",
+    "audit/question_ingestion.json"
+  ],
+  "disposable_test_database_removed": true
+}

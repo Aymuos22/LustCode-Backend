@@ -1,0 +1,142 @@
+{
+  "checked_at": "2026-11-09T12:17:21.505658+00:00",
+  "status": "passed",
+  "migration_revision": "e42b19c06d31",
+  "rls_enabled_tables": 9,
+  "automated_tests": {
+    "passed": 315,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 32.81,
+    "new_tests": 32
+  },
+  "live_executions": {
+    "passed": 8,
+    "failed": 0,
+    "seconds_including_api_checks": 153.67,
+    "report": "audit/frontend_features_live.json"
+  },
+  "checks": {
+    "format_lint_types": "passed (61 app source files)",
+    "dependency_check": "passed",
+    "compileall": "passed",
+    "migration_upgrade_drift_downgrade_and_full_roundtrip": "passed in disposable PostgreSQL",
+    "hosted_migration_head_and_drift": "passed",
+    "new_tables_rls": "passed",
+    "api_readiness_liveness_openapi": "passed",
+    "live_custom_function_and_design_execution": "passed",
+    "live_playground_starters_all_languages": "passed",
+    "live_catalog_drafts_preferences_and_avatars": "passed",
+    "no_graded_credit_from_live_runs": "passed",
+    "database_catalog_statements_and_all_case_snapshots": "passed",
+    "api_worker_source_matches_workspace": true,
+    "avatar_persistent_volume_configured": true,
+    "frontend_unchanged": true
+  },
+  "catalog": {
+    "questions": 300,
+    "judgeable_questions": 283,
+    "unsupported_sql_shell": 17,
+    "all_bodies_preserved_verbatim": 300,
+    "test_cases": 2769,
+    "visible_cases": 623,
+    "hidden_cases": 2146,
+    "suite_version": "authored-v3-visible-samples"
+  },
+  "collections": [
+    {
+      "slug": "foreplay",
+      "difficulty": "easy",
+      "question_count": 77
+    },
+    {
+      "slug": "main-event",
+      "difficulty": "medium",
+      "question_count": 173
+    },
+    {
+      "slug": "hardcore",
+      "difficulty": "hard",
+      "question_count": 50
+    }
+  ],
+  "features": [
+    "contract-aware custom question runs",
+    "topics and combined topic filtering",
+    "database-backed difficulty collections",
+    "explicit featured selection",
+    "filtered random and previous/next navigation",
+    "account drafts with optimistic concurrency",
+    "partial editor preferences and language metadata",
+    "validated persistent avatars",
+    "UTC streak and acceptance metrics"
+  ],
+  "handoff": "FRONTEND_API_HANDOFF.md",
+  "frontend_proxy_changes": "FRONTEND_API_HANDOFF.md#frontend-proxy-changes-required-frontend-left-unchanged",
+  "files_changed": [
+    "app/api/features.py",
+    "app/api/routes.py",
+    "app/api/dependencies.py",
+    "app/main.py",
+    "app/models.py",
+    "app/schemas.py",
+    "app/repositories.py",
+    "app/services/catalog.py",
+    "app/services/workspaces.py",
+    "app/services/avatars.py",
+    "app/services/profiles.py",
+    "app/services/questions.py",
+    "app/services/submissions.py",
+    "app/worker.py",
+    "app/languages.py",
+    "app/core/config.py",
+    "app/core/errors.py",
+    "app/core/middleware.py",
+    "migrations/versions/e42b19c06d31_frontend_features.py",
+    "tests/test_frontend_features.py",
+    "tests/test_feature_failures.py",
+    "tests/test_judge0_foundation.py",
+    "scripts/verify_frontend_features_live.py",
+    "pyproject.toml",
+    "requirements.lock",
+    "requirements-dev.lock",
+    "Dockerfile",
+    "compose.yaml",
+    ".env.example",
+    ".gitignore",
+    ".dockerignore",
+    "FRONTEND_API_HANDOFF.md",
+    "README.md",
+    "AUDIT.md",
+    "VALIDATION.md",
+    "audit/frontend_features_live.json",
+    "audit/frontend_features_verification.json",
+    "audit/current_verification.json",
+    "audit/judging_verification.json"
+  ],
+  "test_commands": [
+    "TEST_DATABASE_URL=<disposable-postgres-url> pytest -q",
+    "ruff check .",
+    "ruff format --check .",
+    "mypy app",
+    "pip check",
+    "python -m compileall -q app migrations",
+    "alembic upgrade head; alembic check; alembic downgrade d7e901a48b22; alembic upgrade head (disposable database)",
+    "alembic downgrade base; alembic upgrade head; alembic check (disposable database)",
+    "alembic check (hosted read-only drift check)",
+    "PYTHONPATH=. python scripts/verify_frontend_features_live.py"
+  ],
+  "limitations": [
+    "Frontend integration is not implemented here; its method/path/query/auth/binary proxy changes are documented.",
+    "Custom cases validate representable typed fixtures, not every English-language domain constraint or method precondition.",
+    "Custom inputs execute without an expected-answer oracle; accepted is successful execution, not problem correctness.",
+    "Avatars use a persistent filesystem; multiple API replicas need shared storage and coordinated file/database backups.",
+    "Best-effort avatar cleanup can leave unreachable orphan files after crashes; automated orphan garbage collection is not implemented.",
+    "Draft resets retain revision tombstones. Real downgrades discard new feature metadata and drafts; back up before rollback.",
+    "Featured selection is the documented first-in-catalog rule, not inferred popularity.",
+    "Live execution covers representative cases; public Judge0 quotas/availability and production load readiness remain external/operational constraints.",
+    "SQL/shell execution remains disabled. This workspace has no Git history for historical credential auditing."
+  ],
+  "source_and_artifact_credentials_scan": "passed",
+  "scanned_files": 129
+}

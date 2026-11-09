@@ -1,0 +1,95 @@
+{
+  "checked_at": "2026-11-09T12:10:15.627913+00:00",
+  "status": "passed",
+  "checks": {
+    "catalog_topics_collections_random_featured_navigation": "passed",
+    "draft_conflict_and_reset": "passed",
+    "preferences": "passed",
+    "avatar_upload_public_read_and_removal": "passed",
+    "runs_drafts_preferences_avatars_do_not_change_graded_statistics_or_progress": "passed"
+  },
+  "executions": [
+    {
+      "id": "47d4d27b-d2fb-440d-b587-eb2061a56328",
+      "language": "python",
+      "language_version": "Python (3.14.0)",
+      "evaluation_scope": "custom",
+      "total_tests": 1,
+      "status": "accepted",
+      "case": "custom_python",
+      "passed": true
+    },
+    {
+      "id": "bfff15dd-9369-4fdd-954c-de42c4244d72",
+      "language": "java",
+      "language_version": "Java (JDK 17.0.6)",
+      "evaluation_scope": "custom",
+      "total_tests": 1,
+      "status": "accepted",
+      "case": "custom_java",
+      "passed": true
+    },
+    {
+      "id": "445229eb-c35a-4564-9228-8244a4671928",
+      "language": "cpp",
+      "language_version": "C++ (GCC 14.1.0)",
+      "evaluation_scope": "custom",
+      "total_tests": 1,
+      "status": "accepted",
+      "case": "custom_cpp",
+      "passed": true
+    },
+    {
+      "id": "5fe25dde-9805-42eb-a1f8-562974460b35",
+      "language": "python",
+      "language_version": "Python (3.14.0)",
+      "evaluation_scope": "custom",
+      "total_tests": 1,
+      "status": "accepted",
+      "case": "custom_design",
+      "passed": true
+    },
+    {
+      "id": "a5599f29-4635-4aed-9cc8-ec385d1ae1ec",
+      "language": "python",
+      "language_version": "Python (3.14.0)",
+      "evaluation_scope": "playground",
+      "total_tests": 1,
+      "status": "accepted",
+      "case": "playground_starter_python",
+      "passed": true
+    },
+    {
+      "id": "53cfc6da-41a3-43ce-be7a-60efd27fdd39",
+      "language": "java",
+      "language_version": "Java (JDK 17.0.6)",
+      "evaluation_scope": "playground",
+      "total_tests": 1,
+      "status": "accepted",
+      "case": "playground_starter_java",
+      "passed": true
+    },
+    {
+      "id": "fbdd3cdb-41f8-4386-a3d0-8c469abbb0ee",
+      "language": "cpp",
+      "language_version": "C++ (GCC 14.1.0)",
+      "evaluation_scope": "playground",
+      "total_tests": 1,
+      "status": "accepted",
+      "case": "playground_starter_cpp",
+      "passed": true
+    },
+    {
+      "id": "0bdecf42-b2aa-4af4-bd9f-018d00143887",
+      "language": "python",
+      "language_version": "Python (3.14.0)",
+      "evaluation_scope": "samples",
+      "total_tests": 3,
+      "status": "accepted",
+      "case": "existing_samples",
+      "passed": true
+    }
+  ],
+  "finished_at": "2026-11-09T12:12:49.295340+00:00",
+  "elapsed_seconds": 153.67
+}

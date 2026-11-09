@@ -1,0 +1,114 @@
+{
+  "checked_at": "2026-11-09T11:41:24.682963+00:00",
+  "suite_version": "authored-v3-visible-samples",
+  "questions": 300,
+  "judgeable_questions": 283,
+  "unsupported_sql_shell": 17,
+  "test_cases": 2769,
+  "hidden_cases": 2146,
+  "main_bodies_preserved_verbatim": 300,
+  "database_suite_hashes": "passed",
+  "migration_revision": "d7e901a48b22",
+  "rls_enabled_tables": 7,
+  "idempotent_suite_reinstall": {
+    "created": 0,
+    "updated": 0,
+    "unchanged": 283,
+    "questions": 283,
+    "test_cases": 2769
+  },
+  "suite_reinstall_seconds": 1.96,
+  "catalog_reimport": {
+    "created": 0,
+    "updated": 0,
+    "unchanged": 300,
+    "total": 300
+  },
+  "source_and_artifact_credentials_scan": "passed",
+  "scanned_files": 116,
+  "credential_file_mode": "0600",
+  "status": "passed",
+  "visible_cases": 623,
+  "endpoint": {
+    "method": "POST",
+    "path": "/api/v1/questions/{question_id}/runs",
+    "body_fields": [
+      "language",
+      "source_code",
+      "language_id (optional)"
+    ],
+    "authentication": "Bearer access token",
+    "response_status": 202,
+    "poll": "GET /api/v1/submissions/{id}",
+    "mode": "run"
+  },
+  "questions_with_executable_samples": 283,
+  "questions_given_authored_fallback_samples": 49,
+  "minimum_hidden_cases_per_question": 2,
+  "automated_tests": {
+    "passed": 283,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 28.56,
+    "new_sample_run_tests": 20
+  },
+  "live_checks": {
+    "passed": 11,
+    "failed": 0,
+    "sample_runs": 10,
+    "full_submission_rejection": 1,
+    "seconds": 274.75,
+    "report": "audit/sample_runs_live.json"
+  },
+  "checks": {
+    "sample_runs_use_only_visible_snapshots": "passed",
+    "sample_runs_leave_progress_attempts_statistics_and_solve_credit_unchanged": "passed",
+    "passing_samples_can_fail_full_submission": "passed",
+    "snapshot_isolation_ownership_and_hidden_field_privacy": "passed",
+    "quota_pending_limits_and_provider_error_handling": "passed",
+    "all_live_jobs_use_current_evaluation_contract": "passed",
+    "format_lint_types_and_dependencies": "passed",
+    "live_readiness_liveness_and_openapi": "passed",
+    "api_worker_source_matches_workspace": true
+  },
+  "schema_changed": false,
+  "problems_fixed": [
+    "Question solution code could only run against the full suite; custom runs required complete stdin/stdout programs.",
+    "49 enabled questions had no executable visible sample.",
+    "Question-associated sample runs needed admission logic that never updates progress.",
+    "Result APIs needed visible input and expected-output snapshots for the sample result panel."
+  ],
+  "files_changed": [
+    "app/api/routes.py",
+    "app/schemas.py",
+    "app/services/submissions.py",
+    "app/judging/suites.py",
+    "app/diagnostics/sample_runs.py",
+    "tests/test_sample_runs.py",
+    "tests/test_judging.py",
+    "README.md",
+    "AUDIT.md",
+    "VALIDATION.md",
+    "data/questions/README.md",
+    "audit/sample_runs_live.json",
+    "audit/sample_runs_verification.json",
+    "audit/current_verification.json",
+    "audit/judging_verification.json"
+  ],
+  "test_commands": [
+    "TEST_DATABASE_URL=postgresql+asyncpg://test:test@localhost:55432/lustcode_test pytest -q",
+    "ruff check .",
+    "ruff format --check .",
+    "mypy app",
+    "pip check",
+    "python -m compileall -q app migrations",
+    "python -m app.diagnostics.sample_runs --timeout 900 --output audit/sample_runs_live.json"
+  ],
+  "limitations": [
+    "Sample runs evaluate all installed visible samples; editable function-contract custom inputs are not implemented.",
+    "Passing visible samples does not guarantee passing the full hidden suite.",
+    "SQL/shell questions remain browsable with execution disabled.",
+    "Public Judge0 availability, quotas and execution latency remain external constraints.",
+    "This change does not establish production load or deployment readiness."
+  ]
+}

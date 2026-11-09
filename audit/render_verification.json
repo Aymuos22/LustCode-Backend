@@ -1,0 +1,130 @@
+{
+  "verified_at": "2026-11-10",
+  "status": "locally_verified_deployment_blocked_on_github_and_render_authentication",
+  "cloud_deployed": false,
+  "github_repository": "https://github.com/Aymuos22/LustCode-Backend",
+  "configuration": {
+    "services": [
+      "lustcode-api",
+      "lustcode-worker",
+      "lustcode-redis"
+    ],
+    "region": "singapore",
+    "web_and_worker_plan": "0.5c-512mb",
+    "key_value_plan": "256mb",
+    "avatar_disk_gb": 1,
+    "cors": "all origins; cross-origin cookie credentials disabled; private endpoints require bearer authentication",
+    "database": "existing Supabase, verified TLS, session pooler 5432",
+    "migrations": "serialized PostgreSQL advisory transaction lock; both pre-deploy jobs"
+  },
+  "checks": {
+    "pytest": {
+      "passed": 340,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 35.65,
+      "command": "TEST_DATABASE_URL=<disposable PostgreSQL URL> .venv/bin/pytest -q"
+    },
+    "final_blueprint_and_deployment_tests": {
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 1.27
+    },
+    "ruff": "passed; 100 Python files formatted",
+    "mypy": "passed; 65 application source files",
+    "pip_check": "passed; no broken requirements",
+    "docker_build": "passed; lustcode-backend:render-test",
+    "blueprint_schema": {
+      "status": "passed",
+      "source": "https://render.com/schema/render.yaml.json",
+      "retrieved_at": "2026-11-10",
+      "sha256": "8a3fb8da6b4f55fe686fbefa790e011d3dd7895f013f355953c572a21ab6494a"
+    },
+    "postgres_migrations": "upgrade head; alembic check (no drift); downgrade base; upgrade head; passed on disposable PostgreSQL16",
+    "concurrent_release": "two real release processes against an isolated database both exited 0; head e42b19c06d31; nine RLS tables verified",
+    "secret_scan": {
+      "candidate_files": 133,
+      "exact_local_secret_matches": 0,
+      "private_key_or_github_render_token_or_jwt_findings": 0,
+      "env_files_ignored": true
+    },
+    "production_docker_smoke": {
+      "liveness": 200,
+      "readiness": {
+        "http_status": 200,
+        "cold_seconds": 2.958
+      },
+      "wildcard_cors_two_origins": true,
+      "unauthenticated_private_endpoint": 401,
+      "production_docs_disabled": true,
+      "catalog_total": 300,
+      "nonroot_uid": 10001,
+      "avatar_volume_writable": true,
+      "graceful_shutdown": {
+        "exit_code": 0,
+        "seconds": 0.606,
+        "oom_killed": false
+      },
+      "readiness_after_recreate": {
+        "http_status": 200,
+        "cold_seconds": 3.073
+      },
+      "volume_persists_across_container_recreation": true,
+      "scope": "Local Docker in production mode, real existing Supabase over verified TLS, isolated Redis, named avatar volume; no live Render service.",
+      "initial_probe_note": "Initial three-second configuration returned sanitized503 during cold Supabase connection; Blueprint was changed to four seconds and cold/recreated probes returned200."
+    }
+  },
+  "issues_fixed": [
+    "Fixed-port Docker startup replaced with validated Render PORT binding.",
+    "Packaged Supabase CA; container certificate override removes dependency on native host paths.",
+    "Added paid API/worker/private persistent Key Value Blueprint with persistent avatar disk.",
+    "Added serialized release migrations to prevent simultaneous web/worker schema upgrades.",
+    "Added explicit wildcard CORS opt-in requested by user, retaining bearer authentication and disabled credentialed CORS.",
+    "Added configured trusted proxy client-IP/scheme handling; arbitrary forwarded headers ignored by default.",
+    "Bound password hashing and image normalization concurrency for API memory limits.",
+    "Reduced hosted readiness budget to fit Render probes; initial three-second cold probe returned sanitized503, four-second setting passed live TLS smoke.",
+    "Added offline official Blueprint schema validation, deployment behavior tests, and CI Docker build."
+  ],
+  "render_task_files": [
+    "render.yaml",
+    "Dockerfile",
+    "app/serve.py",
+    "app/release.py",
+    "app/core/config.py",
+    "app/core/proxy.py",
+    "app/core/middleware.py",
+    "app/db.py",
+    "app/main.py",
+    "app/api/dependencies.py",
+    "app/api/features.py",
+    "app/services/auth.py",
+    "app/services/avatars.py",
+    "tests/test_render.py",
+    "deploy/render.schema.json",
+    "pyproject.toml",
+    "requirements-dev.lock",
+    ".env.example",
+    ".github/workflows/ci.yml",
+    "README.md",
+    "audit/render_verification.json"
+  ],
+  "remaining_limitations": [
+    "GitHub push failed because HTTPS authentication is unavailable; the empty remote has not received this commit or run CI.",
+    "Render connector/account access is unavailable; no cloud services, URL, alerts, or cloud deployment results exist yet.",
+    "Blueprint creates paid resources; review the actual Render cost estimate and authorize provisioning.",
+    "Rotate the database password previously shared in chat before a public launch; update both local and Render secrets.",
+    "Cloud ingress client-IP behavior and non-root avatar disk permissions must be verified on Render; Docker-volume tests do not prove Render mount ownership.",
+    "Real Render auth/avatar/sample-run/submission flow for all three languages, worker health and shutdown, traffic load, backups and restore drill remain unverified.",
+    "Public Judge0 availability/capacity is external; no new live provider execution was performed in this Render preparation.",
+    "One API instance with a disk has deployment downtime and cannot scale horizontally; object storage is needed before API replication.",
+    "Existing local avatars are not transferred automatically."
+  ],
+  "git": {
+    "branch": "main",
+    "local_commit_created": true,
+    "push_succeeded": false,
+    "push_error": "GitHub HTTPS username/credentials unavailable; interactive prompts disabled",
+    "remote_changed": false
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-11-07T13:49:24.650991+00:00",
+  "endpoint": "https://ce.judge0.com",
+  "checks": [
+    {
+      "language": "python",
+      "language_id": 113,
+      "version": "Python (3.14.0)",
+      "submitted": true,
+      "status": "accepted",
+      "stdout": "foundation:LustCode\n",
+      "stderr": null,
+      "compile_output": null,
+      "execution_time": 1.078,
+      "memory_kb": 52664,
+      "passed": true
+    },
+    {
+      "language": "java",
+      "language_id": 91,
+      "version": "Java (JDK 17.0.6)",
+      "submitted": true,
+      "status": "accepted",
+      "stdout": "foundation:LustCode\n",
+      "stderr": null,
+      "compile_output": null,
+      "execution_time": 0.071,
+      "memory_kb": 16540,
+      "passed": true
+    },
+    {
+      "language": "cpp",
+      "language_id": 105,
+      "version": "C++ (GCC 14.1.0)",
+      "submitted": true,
+      "status": "accepted",
+      "stdout": "foundation:LustCode\n",
+      "stderr": null,
+      "compile_output": null,
+      "execution_time": 0.003,
+      "memory_kb": 1136,
+      "passed": true
+    }
+  ]
+}

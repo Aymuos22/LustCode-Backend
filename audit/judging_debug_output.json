@@ -1,0 +1,57 @@
+{
+  "checked_at": "2026-11-09T06:41:00.711943+00:00",
+  "base_url": "http://127.0.0.1:8000",
+  "status": "passed",
+  "checks": {
+    "private_results_redacted": "passed",
+    "all_submission_snapshots_use_current_suite": "passed",
+    "debug_messages_are_diagnostics_only": "passed"
+  },
+  "submissions": [
+    {
+      "case": "python_debug_output",
+      "id": "b0054776-d541-4351-9e79-bf542fec34d8",
+      "question": 1,
+      "language": "python",
+      "version": "Python (3.14.0)",
+      "expected": "accepted",
+      "status": "accepted",
+      "tests": 7,
+      "passed_tests": 7,
+      "passed": true
+    },
+    {
+      "case": "java_debug_output",
+      "id": "878aa79d-10d0-4ed1-99a5-9203ee80a568",
+      "question": 1,
+      "language": "java",
+      "version": "Java (JDK 17.0.6)",
+      "expected": "accepted",
+      "status": "accepted",
+      "tests": 7,
+      "passed_tests": 7,
+      "passed": true
+    },
+    {
+      "case": "cpp_debug_output",
+      "id": "dbff5881-7354-441c-bf0c-693d9cab9764",
+      "question": 1,
+      "language": "cpp",
+      "version": "C++ (GCC 14.1.0)",
+      "expected": "accepted",
+      "status": "accepted",
+      "tests": 7,
+      "passed_tests": 7,
+      "passed": true
+    }
+  ],
+  "account": {
+    "id": "fad56659-641c-4d6e-883e-98e159f6c5e2",
+    "username": "lustcode_test"
+  },
+  "elapsed_seconds": 400.25,
+  "finished_at": "2026-11-09T06:48:06.811777+00:00",
+  "suite_version": "authored-v2-domain-validated",
+  "source_report": "audit/judging_live.json",
+  "results_rechecked_at": "2026-11-09T06:48:47.998775+00:00"
+}
