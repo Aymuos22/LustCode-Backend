@@ -1,5 +1,6 @@
 FROM python:3.12-slim AS runtime
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    DATABASE_SSL_ROOT_CERT=/srv/lustcode/certs/supabase-root-2021.crt
 WORKDIR /srv/lustcode
 COPY requirements.lock ./
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.lock

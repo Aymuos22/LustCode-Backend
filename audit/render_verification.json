@@ -1,6 +1,6 @@
 {
   "verified_at": "2026-11-10",
-  "status": "locally_verified_pushed_render_connection_pending",
+  "status": "startup_ca_fix_verified_cloud_redeploy_pending",
   "cloud_deployed": false,
   "github_repository": "https://github.com/Aymuos22/LustCode-Backend",
   "configuration": {
@@ -19,10 +19,10 @@
   },
   "checks": {
     "pytest": {
-      "passed": 340,
+      "passed": 342,
       "failed": 0,
       "skipped": 0,
-      "seconds": 35.65,
+      "seconds": 42.26,
       "command": "TEST_DATABASE_URL=<disposable PostgreSQL URL> .venv/bin/pytest -q"
     },
     "final_blueprint_and_deployment_tests": {
@@ -31,10 +31,10 @@
       "skipped": 0,
       "seconds": 1.27
     },
-    "ruff": "passed; 100 Python files formatted",
+    "ruff": "passed; 101 Python files formatted",
     "mypy": "passed; 65 application source files",
     "pip_check": "passed; no broken requirements",
-    "docker_build": "passed; lustcode-backend:render-test",
+    "docker_build": "passed; lustcode-backend:render-ca-fix",
     "blueprint_schema": {
       "status": "passed",
       "source": "https://render.com/schema/render.yaml.json",
@@ -107,10 +107,11 @@
     ".env.example",
     ".github/workflows/ci.yml",
     "README.md",
-    "audit/render_verification.json"
+    "audit/render_verification.json",
+    "scripts/verify_container_startup.py"
   ],
   "remaining_limitations": [
-    "Render connector/account access is unavailable; no cloud services, URL, alerts, or cloud deployment results exist yet.",
+    "Render dashboard access is unavailable. User-provided logs show an existing service attempted deployment but failed during TLS client initialization; the corrected image still needs deployment and live verification.",
     "Rotate the database password previously shared in chat before a public launch; update both local and Render secrets.",
     "Cloud ingress client-IP behavior and non-root avatar disk permissions must be verified on Render; Docker-volume tests do not prove Render mount ownership.",
     "Real Render auth/avatar/sample-run/submission flow for all three languages, worker health and shutdown, traffic load, backups and restore drill remain unverified.",
@@ -132,5 +133,43 @@
     "date": "2026-11-10",
     "scope": "Previously reviewed Render Blueprint: paid API, worker, Key Value and 1 GB disk; user instructed deploy it.",
     "additional_provisioning_approval_required": false
+  },
+  "cloud_deployment_attempt_observed": {
+    "evidence": "User-provided Render deployment traceback for commit6eed3b4",
+    "last_observed_state": "startup_failed",
+    "failure": "FileNotFoundError while loading database TLS CA certificate",
+    "live_recovery_verified": false
+  },
+  "startup_ca_fix": {
+    "date": "2026-11-10",
+    "problem": "Native DATABASE_URL contains a CA certificate path from the developer computer; this file does not exist inside Render. The Blueprint supplies an override but a manually configured Docker service did not inherit that setting.",
+    "changes": [
+      "Set the packaged CA path as a Docker image environment default, with explicit runtime overrides retaining precedence.",
+      "Added a safe actionable TLS configuration error; invalid/unreadable certificates still stop initialization without disabling verification.",
+      "Added CI container production-lifespan probe using synthetic Supabase URLs with unavailable native certificate paths.",
+      "Documented manual Render environment override precedence."
+    ],
+    "regression_before": "Reproduced FileNotFoundError using previous Docker image and a synthetic native certificate path.",
+    "regression_after": {
+      "production_lifespan": "passed",
+      "api_and_migration_engines": "initialized",
+      "uid": 10001,
+      "tls": "CA and hostname verification enabled",
+      "external_dependencies": "unavailable synthetic endpoints; startup remains lazy"
+    },
+    "additional_unit_tests": "Missing/invalid CA cases fail closed with a safe runtime hint; 63 targeted tests passed, one integration test deselected. Full suite subsequently passed with no skips.",
+    "real_supabase_smoke": {
+      "scope": "local Docker; actual Supabase; original native database URL; no DATABASE_SSL_ROOT_CERT runtime override; image default selected",
+      "liveness": 200,
+      "readiness": {
+        "http_status": 200,
+        "cold_seconds": 2.868
+      },
+      "catalog_total": 300,
+      "cors_any_origin": true,
+      "private_route_without_auth": 401,
+      "graceful_shutdown_exit_code": 0
+    },
+    "cloud_status": "Corrected image must be deployed on Render; no service URL or dashboard access is available for live recovery verification."
   }
 }

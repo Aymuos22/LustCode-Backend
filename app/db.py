@@ -28,7 +28,15 @@ def create_engine(settings: Settings, *, migration: bool = False) -> AsyncEngine
     ca_file = (
         str(settings.database_ssl_root_cert) if settings.database_ssl_root_cert else target.ca_file
     )
-    connect_args["ssl"] = ssl.create_default_context(cafile=ca_file) if target.tls else False
+    try:
+        connect_args["ssl"] = ssl.create_default_context(cafile=ca_file) if target.tls else False
+    except OSError:
+        raise ValueError(
+            "Cannot load the database TLS CA certificate. Set DATABASE_SSL_ROOT_CERT to a "
+            "readable CA file in this runtime. The Docker image includes "
+            "/srv/lustcode/certs/supabase-root-2021.crt; local computer paths do not exist "
+            "inside the container."
+        ) from None
     pool_options: dict[str, object] = (
         {"poolclass": NullPool}
         if migration

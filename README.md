@@ -69,8 +69,13 @@ estimate before creating the Blueprint. No cloud deployment is implied by this f
    Blueprint from `main` using this `render.yaml`.
 2. Enter `DATABASE_URL` in Render's secret prompt. Use the Supabase **session** pooler
    on port **5432**, with the `postgresql+asyncpg://` scheme and a percent-encoded
-   password. The packaged public CA is selected with `DATABASE_SSL_ROOT_CERT`, so
-   an old local certificate path in the URL is overridden. Rotate the database
+   password. The Docker image defaults `DATABASE_SSL_ROOT_CERT` to its packaged
+   public CA, so an old local certificate path in the URL is overridden even when
+   creating a service manually. Render environment variables override this image
+   default: remove any stale service-level override or set it to
+   `/srv/lustcode/certs/supabase-root-2021.crt` on both API and worker. A different
+   database CA must be explicitly supplied with `DATABASE_SSL_ROOT_CERT`.
+   Rotate the database
    password previously shared in chat before using it for the public deployment;
    update local secrets and Render together. Do not put credentials in this file.
 3. Render generates one fresh JWT secret in the shared environment group. Both
@@ -116,7 +121,11 @@ or concurrency.
 
 Automatic deployments wait for GitHub checks (`autoDeployTrigger: checksPass`); the
 workflow runs lint, typing, isolated PostgreSQL tests, migration checks/roundtrips,
-Blueprint schema validation, and a Docker build. Initial Blueprint creation or manual
+Blueprint schema validation, a Docker build, and production container startup with
+synthetic URLs containing an unavailable native CA path. The startup probe requires
+no external connections and verifies that both API and migration engines initialize,
+liveness responds, TLS verification stays enabled, and the process uses UID 10001.
+Initial Blueprint creation or manual
 deployments still need their build/deploy results inspected. The vendored schema in
 `deploy/render.schema.json` is an offline snapshot of Render's official schema,
 retrieved on 2026-11-10; refresh it from `https://render.com/schema/render.yaml.json`

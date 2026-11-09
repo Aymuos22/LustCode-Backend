@@ -198,6 +198,28 @@ def test_image_ca_override_replaces_native_url_path(settings, monkeypatch):
     assert factory.call_args.args[0].query == {}
 
 
+@pytest.mark.parametrize("invalid_contents", [None, "not a valid CA certificate"])
+def test_missing_or_invalid_ca_fails_closed_with_safe_runtime_hint(
+    settings, monkeypatch, tmp_path, invalid_contents
+):
+    ca = tmp_path / "ca.crt"
+    if invalid_contents is not None:
+        ca.write_text(invalid_contents)
+    settings = config(
+        settings,
+        database_url="postgresql+asyncpg://user:private-fixture-password@host/db?sslmode=verify-full",
+        database_ssl_root_cert=ca,
+    )
+    factory = MagicMock()
+    monkeypatch.setattr("app.db.create_async_engine", factory)
+    with pytest.raises(ValueError, match="DATABASE_SSL_ROOT_CERT") as error:
+        create_engine(settings)
+    assert "/srv/lustcode/certs/supabase-root-2021.crt" in str(error.value)
+    assert "private-fixture-password" not in str(error.value)
+    assert "postgresql" not in str(error.value)
+    factory.assert_not_called()
+
+
 @pytest.mark.parametrize("failure", [False, True])
 async def test_release_holds_transaction_lock_and_disposes_on_failure(
     settings, monkeypatch, failure

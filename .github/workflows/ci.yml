@@ -45,3 +45,4 @@ jobs:
       - run: pytest -q
       - run: alembic downgrade base && alembic upgrade head
       - run: docker build -t lustcode-backend:ci .
+      - run: python scripts/verify_container_startup.py lustcode-backend:ci
