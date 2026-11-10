@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-10",
+  "status": "local_verified_deployment_pending",
+  "products": [
+    {
+      "id": "premium-condom-pack",
+      "name": "Premium Condom Pack (12 pcs)",
+      "coins": 500,
+      "available_sizes": []
+    },
+    {
+      "id": "water-based-lubricant",
+      "name": "Water-Based Lubricant (100ml)",
+      "coins": 1000,
+      "available_sizes": []
+    },
+    {
+      "id": "body-massage-oil",
+      "name": "Body Massage Oil (100ml)",
+      "coins": 2000,
+      "available_sizes": []
+    },
+    {
+      "id": "soft-adjustable-blindfold",
+      "name": "Soft Adjustable Blindfold",
+      "coins": 4000,
+      "available_sizes": []
+    }
+  ],
+  "migration_head": "8ae36dc2f109",
+  "behavior": [
+    "Only the four requested products are listed and accepted for new checkout",
+    "Retired merchandise remains in the database for historical foreign keys, but cannot be newly ordered",
+    "Old order snapshots, idempotent retries, cancellations, balances and ledger entries are preserved",
+    "India-only shipping and manual fulfillment remain enabled"
+  ],
+  "verification": {
+    "pytest": {
+      "passed": 412,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 117.58,
+      "warnings": "6 Alembic path_separator deprecation warnings"
+    },
+    "focused_tests_passed": 88,
+    "strengthened_migration_test": "passed separately after adding legacy retry and refund checks",
+    "ruff_check": "passed",
+    "ruff_format": "passed; 115 files",
+    "mypy": "passed; 72 application source files",
+    "docker_build": "passed",
+    "migration_history_protection": "upgrade with old order and ledger, old checkout replay and refund, new checkout, protected downgrade, empty downgrade/re-upgrade and schema check passed on disposable PostgreSQL16"
+  },
+  "live_verification": "pending deployment",
+  "remaining_limitations": [
+    "Physical fulfillment is manual; no courier booking, procurement, notifications or shipment was performed.",
+    "New stock quantities are unset for manual/on-demand fulfillment; staff must confirm availability.",
+    "Frontend must read the current API catalog; no React files were changed."
+  ]
+}

@@ -44,7 +44,7 @@ async def shopper(api, sessions, username="shopper", coins=5000, staff=False):
     return headers, identifier
 
 
-def payload(reward="lustcode-stickers", **changes):
+def payload(reward="premium-condom-pack", **changes):
     return {"reward_id": reward, "shipping_address": dict(ADDRESS), **changes}
 
 
@@ -63,10 +63,10 @@ async def wallet(api, headers):
 @pytest.mark.parametrize(
     "product,cost,size",
     [
-        ("lustcode-stickers", 500, None),
-        ("lustcode-notebook", 1000, None),
-        ("lustcode-shirt", 2000, "L"),
-        ("lustcode-hoodie", 4000, "XL"),
+        ("premium-condom-pack", 500, None),
+        ("water-based-lubricant", 1000, None),
+        ("body-massage-oil", 2000, None),
+        ("soft-adjustable-blindfold", 4000, None),
     ],
 )
 async def test_can_order_each_product_to_indian_address(api, sessions, product, cost, size):
@@ -122,7 +122,7 @@ async def test_stock_race_and_refund_restore_inventory_once(api, sessions):
     first, _ = await shopper(api, sessions, "first", coins=500)
     second, _ = await shopper(api, sessions, "second", coins=500)
     async with sessions() as session:
-        product = await session.get(RewardProduct, "lustcode-stickers")
+        product = await session.get(RewardProduct, "premium-condom-pack")
         product.stock_quantity = 1
         await session.commit()
     responses = await asyncio.gather(order(api, first), order(api, second))
@@ -146,7 +146,7 @@ async def test_stock_race_and_refund_restore_inventory_once(api, sessions):
         500,
     )
     async with sessions() as session:
-        assert (await session.get(RewardProduct, "lustcode-stickers")).stock_quantity == 1
+        assert (await session.get(RewardProduct, "premium-condom-pack")).stock_quantity == 1
     retry = await order(
         api, headers, key=UUID(responses[winner].request.headers["Idempotency-Key"])
     )
@@ -191,16 +191,41 @@ async def test_customer_cannot_supply_price_quantity_status_or_owner(api, sessio
     assert response.status_code == 422 and (await wallet(api, headers))["balance"] == 500
 
 
-async def test_order_requires_idempotency_key_and_appropriate_sizes(api, sessions):
+async def test_order_requires_idempotency_key_and_rejects_unavailable_sizes(api, sessions):
     headers, _ = await shopper(api, sessions)
     assert (
         await api.post("/api/v1/coins/redeem", headers=headers, json=payload())
     ).status_code == 422
-    assert (await order(api, headers, payload("lustcode-shirt"))).json()["error"][
-        "code"
-    ] == "size_required"
     assert (await order(api, headers, payload(size="M"))).json()["error"]["code"] == "invalid_size"
     assert (await order(api, headers, payload("missing"))).status_code == 404
+
+
+async def test_catalog_lists_only_requested_rewards_and_rejects_retired_merchandise(api, sessions):
+    headers, _ = await shopper(api, sessions)
+    async with sessions() as session:
+        session.add(
+            RewardProduct(
+                id="lustcode-stickers",
+                name="LustCode Sticker Pack",
+                description="Retired merchandise retained for order history",
+                coin_cost=500,
+                available_sizes=[],
+                active=True,
+            )
+        )
+        await session.commit()
+    products = (await api.get("/api/v1/coins/rewards")).json()["data"]["rewards"]
+    assert [(p["name"], p["coin_cost"], p["available_sizes"]) for p in products] == [
+        ("Premium Condom Pack (12 pcs)", 500, []),
+        ("Water-Based Lubricant (100ml)", 1000, []),
+        ("Body Massage Oil (100ml)", 2000, []),
+        ("Soft Adjustable Blindfold", 4000, []),
+    ]
+    assert (await order(api, headers, payload("lustcode-stickers"))).status_code == 404
+    for product in products:
+        response = await order(api, headers, payload(product["id"], size="M"))
+        assert response.status_code == 422 and response.json()["error"]["code"] == "invalid_size"
+    assert (await wallet(api, headers))["balance"] == 5000
 
 
 async def test_order_address_is_owned_and_fulfillment_access_requires_staff(api, sessions):
@@ -219,7 +244,7 @@ async def test_order_address_is_owned_and_fulfillment_access_requires_staff(api,
         ("GET", "/admin/orders", None),
         ("GET", f"/admin/orders/{identifier}", None),
         ("PATCH", f"/admin/orders/{identifier}", {"status": "processing"}),
-        ("PATCH", "/admin/rewards/lustcode-stickers", {"active": False}),
+        ("PATCH", "/admin/rewards/premium-condom-pack", {"active": False}),
     ]:
         response = await api.request(method, "/api/v1" + path, headers=other, json=body)
         assert response.status_code == 403 and "9000000000" not in response.text
@@ -269,7 +294,7 @@ async def test_staff_cancellation_refunds_processing_order_once(api, sessions):
 async def test_atomic_rollback_preserves_coins_order_and_stock(api, sessions, monkeypatch):
     headers, _ = await shopper(api, sessions, coins=500)
     async with sessions() as session:
-        product = await session.get(RewardProduct, "lustcode-stickers")
+        product = await session.get(RewardProduct, "premium-condom-pack")
         product.stock_quantity = 1
         await session.commit()
 
@@ -284,14 +309,14 @@ async def test_atomic_rollback_preserves_coins_order_and_stock(api, sessions, mo
     assert (await wallet(api, headers))["balance"] == 500
     assert (await api.get("/api/v1/users/me/orders", headers=headers)).json()["total"] == 0
     async with sessions() as session:
-        assert (await session.get(RewardProduct, "lustcode-stickers")).stock_quantity == 1
+        assert (await session.get(RewardProduct, "premium-condom-pack")).stock_quantity == 1
     assert (await order(api, headers, key=key)).status_code == 201
 
 
 async def test_staff_can_pause_catalog_and_adjust_stock_without_price_changes(api, sessions):
     owner, _ = await shopper(api, sessions, "owner")
     staff, _ = await shopper(api, sessions, "staff", coins=0, staff=True)
-    path = "/api/v1/admin/rewards/lustcode-stickers"
+    path = "/api/v1/admin/rewards/premium-condom-pack"
     assert (await api.patch(path, headers=staff, json={"active": False})).status_code == 200
     assert (await order(api, owner)).json()["error"]["code"] == "product_unavailable"
     assert (

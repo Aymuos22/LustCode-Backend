@@ -26,42 +26,43 @@ from app.services.coins import CoinService
 
 INITIAL_PRODUCTS: tuple[dict[str, Any], ...] = (
     dict(
-        id="lustcode-stickers",
-        name="LustCode Sticker Pack",
-        description="LustCode stickers, fulfilled manually to your Indian shipping address.",
+        id="premium-condom-pack",
+        name="Premium Condom Pack (12 pcs)",
+        description="A pack of 12 premium condoms, fulfilled manually within India.",
         coin_cost=500,
         available_sizes=[],
         active=True,
         stock_quantity=None,
     ),
     dict(
-        id="lustcode-notebook",
-        name="LustCode Notebook",
-        description="A LustCode notebook, fulfilled manually to your Indian shipping address.",
+        id="water-based-lubricant",
+        name="Water-Based Lubricant (100ml)",
+        description="Water-based lubricant, 100ml, fulfilled manually within India.",
         coin_cost=1000,
         available_sizes=[],
         active=True,
         stock_quantity=None,
     ),
     dict(
-        id="lustcode-shirt",
-        name="LustCode T-shirt",
-        description="A LustCode T-shirt in your selected size, fulfilled manually within India.",
+        id="body-massage-oil",
+        name="Body Massage Oil (100ml)",
+        description="Body massage oil, 100ml, fulfilled manually within India.",
         coin_cost=2000,
-        available_sizes=["XS", "S", "M", "L", "XL", "XXL"],
+        available_sizes=[],
         active=True,
         stock_quantity=None,
     ),
     dict(
-        id="lustcode-hoodie",
-        name="LustCode Hoodie",
-        description="A LustCode hoodie in your selected size, fulfilled manually within India.",
+        id="soft-adjustable-blindfold",
+        name="Soft Adjustable Blindfold",
+        description="A soft adjustable blindfold, fulfilled manually within India.",
         coin_cost=4000,
-        available_sizes=["XS", "S", "M", "L", "XL", "XXL"],
+        available_sizes=[],
         active=True,
         stock_quantity=None,
     ),
 )
+CATALOG_PRODUCT_IDS = tuple(product["id"] for product in INITIAL_PRODUCTS)
 
 
 class OrderService:
@@ -71,7 +72,9 @@ class OrderService:
 
     async def catalog(self) -> RewardCatalog:
         rows = await self.session.scalars(
-            select(RewardProduct).order_by(RewardProduct.coin_cost, RewardProduct.id)
+            select(RewardProduct)
+            .where(RewardProduct.id.in_(CATALOG_PRODUCT_IDS))
+            .order_by(RewardProduct.coin_cost, RewardProduct.id)
         )
         return RewardCatalog(rewards=[RewardProductView.model_validate(p) for p in rows])
 
@@ -124,7 +127,10 @@ class OrderService:
             )
         product = await self.session.scalar(
             select(RewardProduct)
-            .where(RewardProduct.id == payload.reward_id)
+            .where(
+                RewardProduct.id == payload.reward_id,
+                RewardProduct.id.in_(CATALOG_PRODUCT_IDS),
+            )
             .with_for_update()
             .execution_options(populate_existing=True)
         )

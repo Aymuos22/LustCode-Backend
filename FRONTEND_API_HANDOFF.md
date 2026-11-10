@@ -384,10 +384,10 @@ state and the wallet after Submit; polling a sample Run must not award coins.
 
 | Product ID | Product | Coins | Size |
 | --- | --- | --- | --- |
-| `lustcode-stickers` | Sticker pack | 500 | None |
-| `lustcode-notebook` | Notebook | 1,000 | None |
-| `lustcode-shirt` | T-shirt | 2,000 | XS, S, M, L, XL, XXL |
-| `lustcode-hoodie` | Hoodie | 4,000 | XS, S, M, L, XL, XXL |
+| `premium-condom-pack` | Premium Condom Pack (12 pcs) | 500 | None |
+| `water-based-lubricant` | Water-Based Lubricant (100ml) | 1,000 | None |
+| `body-massage-oil` | Body Massage Oil (100ml) | 2,000 | None |
+| `soft-adjustable-blindfold` | Soft Adjustable Blindfold | 4,000 | None |
 
 Read prices and availability from `GET /coins/rewards`. The catalog has
 `redemption_enabled: true`, `fulfillment_mode: "manual"`, `shipping_countries: ["IN"]`,
@@ -410,8 +410,7 @@ Idempotency-Key: <crypto.randomUUID() retained for this checkout>
 
 ```json
 {
-  "reward_id": "lustcode-shirt",
-  "size": "M",
+  "reward_id": "premium-condom-pack",
   "shipping_address": {
     "full_name": "Test Recipient",
     "phone": "9000000000",
@@ -427,8 +426,8 @@ Idempotency-Key: <crypto.randomUUID() retained for this checkout>
 
 Only Indian addresses are accepted. PIN codes have six digits; Indian mobile numbers
 normalize to `+91` format. This validates format, not the existence of an address;
-fulfillment staff must confirm dispatch details. Apparel requires a listed size;
-non-apparel products reject a size. Do not send price, quantity, balance, status or
+fulfillment staff must confirm dispatch details. All four products have no size options;
+omit `size` or send null. Non-null sizes are rejected. Do not send price, quantity, balance, status or
 owner fields: the server controls them. Extra fields are rejected 422.
 
 The first order returns 201 with `data: {order, wallet, replayed:false, coins_spent,
@@ -473,8 +472,12 @@ account using `python -m app.fulfillment_admin --username admin` (add `--revoke`
 No account receives staff privileges by signup or by default. Customer credentials cannot
 read another customer's order or address; fulfillment routes return 403 to non-staff.
 
-Apply migration `55b1518bb710` before serving this version. It protects both new tables
-with RLS, preserves existing earnings, and refuses downgrade if redemption history exists.
+Apply migration `8ae36dc2f109` before serving this version. Only the four products above
+are listed. The previous merchandise is retired and cannot be ordered; historical orders
+keep their original product and price snapshots. Existing balances and ledger entries are
+preserved. Downgrading the catalog migration is refused if new-product orders exist;
+otherwise it removes the new products and leaves retired merchandise disabled for an
+operator to review before re-enabling.
 Update every API and worker sharing the database together.
 
 Authenticated `/users/me/statistics` retains all previous fields and adds:
