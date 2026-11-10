@@ -1,6 +1,6 @@
 {
   "date": "2026-11-10",
-  "status": "local_verified_deployment_pending",
+  "status": "passed_local_and_live",
   "rates": {
     "daily_check_in": 1,
     "accepted_daily_problem": 2,
@@ -30,8 +30,28 @@
       "Combined daily check-in and POTD balance is three",
       "Past five- and twenty-coin credits and same-day claim deduplication survive the rate change",
       "UTC rollover, deferred grading, worker rollback, no run rewards and redemption regression tests"
-    ]
+    ],
+    "github_ci": "passed full suite, migrations, build and container smoke test",
+    "local_api_worker": "updated and healthy; local rules endpoint verified 1 and 2",
+    "disposable_test_database": "removed"
   },
-  "live_verification": "pending deployment",
-  "frontend": "Read /coins/rules, wallet.rules and daily reward_coins; API shapes unchanged."
+  "live_verification": {
+    "report": "audit/coin_rates_live.json",
+    "status": "passed",
+    "real_judge0_potd_verdict": "accepted",
+    "check_in_credit": 1,
+    "potd_credit": 2,
+    "combined_balance": 3,
+    "duplicate_credit": "prevented",
+    "fixture_cleanup": "passed",
+    "existing_standard_account_balance_unchanged": true
+  },
+  "frontend": "Read /coins/rules, wallet.rules and daily reward_coins; API shapes unchanged.",
+  "deployment": {
+    "source_commit": "c580cfaaad534348954945c964576e03fbbd1a92",
+    "render_deploy": "dep-dbpfkhqvcj2c73d4hho0",
+    "render_status": "live",
+    "api_base_url": "https://lustcode-backend.onrender.com/api/v1",
+    "paid_resources_created": false
+  }
 }

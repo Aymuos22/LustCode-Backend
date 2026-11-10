@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-11-10T11:05:50.826353+00:00",
+  "status": "passed",
+  "checks": {
+    "public_rules_and_daily_reward": "passed",
+    "check_in_one_coin_once": "passed",
+    "accepted_potd_two_coins_combined_balance_three": "passed",
+    "durable_ledger_matches_new_rates": "passed",
+    "polling_does_not_duplicate_potd_credit": "passed"
+  },
+  "fixture": "Temporary ordinary account; real check-in and Judge0-graded POTD, no synthetic credits. Account and earned test credits removed afterward.",
+  "credentials_recorded": false,
+  "potd_verdict": "accepted",
+  "temporary_account_submissions_and_ledger_removed": true,
+  "finished_at": "2026-11-10T11:07:31.271383+00:00"
+}
