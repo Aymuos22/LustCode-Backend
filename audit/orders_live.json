@@ -1,0 +1,21 @@
+{
+  "checked_at": "2026-11-10T08:10:21.360518+00:00",
+  "base_url": "https://lustcode-backend.onrender.com/api/v1",
+  "status": "passed",
+  "checks": {
+    "four_products_and_prices": "passed",
+    "admin_login_and_staff_authority": "passed",
+    "order_address_and_atomic_five_hundred_coin_debit": "passed",
+    "checkout_replay_no_duplicate_charge": "passed",
+    "owned_order_history_and_customer_staff_denial": "passed",
+    "staff_processing_and_single_refund_cancellation": "passed",
+    "signed_ledger_debit_and_refund": "passed",
+    "browser_checkout_cors_with_idempotency_header": "passed"
+  },
+  "fixture": "Temporary isolated customer account with 500 synthetic test credits; removed after verification. No actual shipment or notification triggered.",
+  "shipping_addresses_recorded_in_report": false,
+  "credentials_recorded": false,
+  "test_order_id": "78015d06-6d3c-4f34-99fe-4b953f781959",
+  "fixture_account_and_orders_removed": true,
+  "finished_at": "2026-11-10T08:10:47.112981+00:00"
+}

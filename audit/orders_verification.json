@@ -1,6 +1,6 @@
 {
   "date": "2026-11-10",
-  "status": "local_verified_deployment_pending",
+  "status": "passed_local_and_live",
   "shipping": "India only; one product per order; phone and PIN format validation; manual fulfillment",
   "products": [
     {
@@ -47,7 +47,8 @@
       "reward_orders"
     ],
     "docker_build": "passed",
-    "local_api_worker": "updated and healthy"
+    "local_api_worker": "updated and healthy",
+    "disposable_test_database": "removed after verification"
   },
   "admin": {
     "username": "admin",
@@ -58,11 +59,29 @@
     "git_ignored": true,
     "credentials_in_report": false
   },
-  "live_verification": "pending Render deployment",
+  "live_verification": {
+    "report": "audit/orders_live.json",
+    "status": "passed",
+    "checks_passed": 8,
+    "temporary_customer_orders_and_ledger_removed": true,
+    "admin_login_verified": true,
+    "schema_head": "55b1518bb710",
+    "application_tables": 13,
+    "all_application_tables_rls_enabled": true,
+    "standard_account_balance_unchanged": true
+  },
   "remaining_limitations": [
     "Fulfillment is manual; no courier booking, notifications, physical procurement or actual shipment was performed.",
     "Initial stock is not asserted; null stock quantity represents manual/on-demand fulfillment. Staff must verify availability and can pause products or set actual quantities.",
     "Customer self-cancellation is available only before processing; return/refund workflows after shipment are future work.",
     "Frontend checkout/fulfillment UI must use the documented APIs; backend changes only."
-  ]
+  ],
+  "deployment": {
+    "source_commit": "fca3537931475717f8a50a9f0b9487069e80f6b9",
+    "github_ci": "passed",
+    "render_deploy": "dep-dbpd1rlg1s2s73c99mvg",
+    "render_status": "live",
+    "api_base_url": "https://lustcode-backend.onrender.com/api/v1",
+    "paid_resources_created": false
+  }
 }
