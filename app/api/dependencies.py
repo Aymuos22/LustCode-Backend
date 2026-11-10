@@ -42,6 +42,15 @@ async def current_user(
 CurrentUser = Annotated[User, Depends(current_user)]
 
 
+async def fulfillment_staff(user: CurrentUser) -> User:
+    if not user.is_staff:
+        raise AppError("forbidden", "Fulfillment staff access required", 403)
+    return user
+
+
+CurrentStaff = Annotated[User, Depends(fulfillment_staff)]
+
+
 async def optional_user(
     request: Request,
     session: Session,

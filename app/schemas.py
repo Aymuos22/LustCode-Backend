@@ -1,3 +1,5 @@
+import re
+import unicodedata
 from datetime import date, datetime
 from typing import Any, Literal
 from uuid import UUID
@@ -12,7 +14,7 @@ from pydantic import (
     field_validator,
 )
 
-from app.models import CoinReason, Difficulty, Language, SubmissionMode, Verdict
+from app.models import CoinReason, Difficulty, Language, OrderStatus, SubmissionMode, Verdict
 
 
 class Schema(BaseModel):
@@ -97,6 +99,7 @@ class UserView(Schema):
 
 class MeView(UserView):
     email: EmailStr
+    is_staff: bool = False
 
 
 class ProfileUpdate(Schema):
@@ -342,18 +345,19 @@ class CoinRules(Schema):
     ordinary_solve: Literal[0] = 0
     sample_or_custom_run: Literal[0] = 0
     timezone: Literal["UTC"] = "UTC"
-    redemption_enabled: Literal[False] = False
+    redemption_enabled: Literal[True] = True
 
 
 class CoinWallet(Schema):
     currency: Literal["LustCoins"] = "LustCoins"
     balance: int
     total_earned: int
-    total_spent: Literal[0] = 0
+    total_spent: int = Field(default=0, ge=0)
+    total_refunded: int = Field(default=0, ge=0)
     check_in_claimed_today: bool
     next_reset_at: datetime
     rules: CoinRules
-    redemption_enabled: Literal[False] = False
+    redemption_enabled: Literal[True] = True
 
 
 class CoinTransactionView(Schema):
@@ -363,6 +367,7 @@ class CoinTransactionView(Schema):
     reward_date: date
     question_id: UUID | None
     submission_id: UUID | None
+    order_id: UUID | None = None
     created_at: datetime
 
 
@@ -377,24 +382,108 @@ class CheckInView(Schema):
     wallet: CoinWallet
 
 
-class RewardPlaceholder(Schema):
+class RewardProductView(Schema):
     id: str
     name: str
     description: str
-    coin_cost: None = None
-    status: Literal["coming_soon"] = "coming_soon"
-    is_placeholder: Literal[True] = True
-    redeemable: Literal[False] = False
+    coin_cost: int
+    available_sizes: list[str]
+    stock_quantity: int | None
+    status: Literal["available", "out_of_stock", "unavailable"]
+    is_placeholder: Literal[False] = False
+    redeemable: bool
 
 
 class RewardCatalog(Schema):
     currency: Literal["LustCoins"] = "LustCoins"
-    redemption_enabled: Literal[False] = False
-    rewards: list[RewardPlaceholder]
+    redemption_enabled: Literal[True] = True
+    fulfillment_mode: Literal["manual"] = "manual"
+    shipping_countries: list[Literal["IN"]] = ["IN"]
+    shipping_cost_coins: Literal[0] = 0
+    rewards: list[RewardProductView]
+
+
+class ShippingAddress(Schema):
+    full_name: str = Field(min_length=2, max_length=120)
+    phone: str = Field(min_length=10, max_length=24)
+    address_line1: str = Field(min_length=5, max_length=200)
+    address_line2: str | None = Field(default=None, max_length=200)
+    city: str = Field(min_length=2, max_length=100)
+    state: str = Field(min_length=2, max_length=100)
+    postal_code: str = Field(pattern=r"^[1-9][0-9]{5}$")
+    country_code: Literal["IN"] = "IN"
+
+    @field_validator("full_name", "address_line1", "address_line2", "city", "state", mode="before")
+    @classmethod
+    def clean_address_text(cls, value: Any) -> Any:
+        if value is None or not isinstance(value, str):
+            return value
+        if any(ord(char) < 32 or ord(char) == 127 for char in value):
+            raise ValueError("Control characters are not allowed")
+        return " ".join(unicodedata.normalize("NFC", value).split())
+
+    @field_validator("phone", mode="before")
+    @classmethod
+    def indian_mobile(cls, value: Any) -> str:
+        if not isinstance(value, str) or not re.fullmatch(r"[+0-9() -]{10,24}", value):
+            raise ValueError("Use a valid Indian mobile number")
+        digits = re.sub(r"[^0-9]", "", value)
+        if len(digits) == 12 and digits.startswith("91"):
+            digits = digits[2:]
+        if not re.fullmatch(r"[6-9][0-9]{9}", digits):
+            raise ValueError("Use a valid Indian mobile number")
+        return "+91" + digits
 
 
 class RedeemRequest(Schema):
     reward_id: str = Field(min_length=1, max_length=60, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+    shipping_address: ShippingAddress
+    size: Literal["XS", "S", "M", "L", "XL", "XXL"] | None = None
+
+
+class OrderSummary(Schema):
+    id: UUID
+    reward_id: str
+    product_name: str
+    coin_cost: int
+    size: str | None
+    status: OrderStatus
+    quantity: Literal[1] = 1
+    fulfillment_mode: Literal["manual"] = "manual"
+    created_at: datetime
+    updated_at: datetime
+    shipped_at: datetime | None
+    delivered_at: datetime | None
+    cancelled_at: datetime | None
+    courier: str | None
+    tracking_number: str | None
+
+
+class OrderDetail(OrderSummary):
+    shipping_address: ShippingAddress
+
+
+class OrderReceipt(Schema):
+    order: OrderDetail
+    wallet: CoinWallet
+    replayed: bool
+    coins_spent: int = 0
+    coins_refunded: int = 0
+
+
+class OrderStatusPatch(Schema):
+    status: OrderStatus
+    courier: str | None = Field(
+        default=None, min_length=2, max_length=80, pattern=r"^[^\x00-\x1f\x7f]+$"
+    )
+    tracking_number: str | None = Field(
+        default=None, min_length=3, max_length=100, pattern=r"^[A-Za-z0-9][A-Za-z0-9 -]*$"
+    )
+
+
+class ProductAvailabilityPatch(Schema):
+    active: bool = True
+    stock_quantity: int | None = Field(default=None, ge=0, le=1_000_000)
 
 
 class LeaderboardEntry(Schema):

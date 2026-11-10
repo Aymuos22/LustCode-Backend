@@ -1,8 +1,11 @@
-from fastapi import APIRouter
+from typing import Annotated
+from uuid import UUID
 
-from app.api.dependencies import Config, CurrentUser, OptionalUser, Session
+from fastapi import APIRouter, Header, Response
+
+from app.api.dependencies import Config, CurrentStaff, CurrentUser, OptionalUser, Session
 from app.api.features import PageNumber, PageSize
-from app.core.errors import AppError
+from app.models import OrderStatus
 from app.schemas import (
     CheckInRequest,
     CheckInView,
@@ -11,13 +14,20 @@ from app.schemas import (
     CoinWallet,
     DailyProblemView,
     Data,
+    OrderDetail,
+    OrderReceipt,
+    OrderStatusPatch,
+    OrderSummary,
     Page,
+    ProductAvailabilityPatch,
     RedeemRequest,
     RewardCatalog,
+    RewardProductView,
     StreakView,
 )
-from app.services.coins import CoinService, reward_catalog, rules
+from app.services.coins import CoinService, rules
 from app.services.daily import DailyProblemService
+from app.services.orders import OrderService
 from app.services.profiles import ProfileService
 
 router = APIRouter(prefix="/api/v1")
@@ -62,12 +72,73 @@ async def check_in(
 
 
 @router.get("/coins/rewards", response_model=Data[RewardCatalog], tags=["coins"])
-async def rewards() -> Data[RewardCatalog]:
-    return Data(data=reward_catalog())
+async def rewards(session: Session) -> Data[RewardCatalog]:
+    return Data(data=await OrderService(session).catalog())
 
 
-@router.post("/coins/redeem", response_model=Data[CoinWallet], tags=["coins"])
-async def redeem(payload: RedeemRequest, user: CurrentUser) -> Data[CoinWallet]:
-    if payload.reward_id not in {r.id for r in reward_catalog().rewards}:
-        raise AppError("reward_not_found", "Reward not found", 404)
-    raise AppError("redemption_unavailable", "Rewards are coming soon; no coins were spent", 409)
+@router.post("/coins/redeem", response_model=Data[OrderReceipt], status_code=201, tags=["orders"])
+async def redeem(
+    payload: RedeemRequest,
+    user: CurrentUser,
+    session: Session,
+    response: Response,
+    idempotency_key: Annotated[UUID, Header(alias="Idempotency-Key")],
+) -> Data[OrderReceipt]:
+    result = await OrderService(session).redeem(user.id, idempotency_key, payload)
+    response.status_code = 200 if result.replayed else 201
+    return Data(data=result)
+
+
+@router.get("/users/me/orders", response_model=Page[OrderSummary], tags=["orders"])
+async def orders(
+    user: CurrentUser, session: Session, page: PageNumber = 1, page_size: PageSize = 20
+) -> Page[OrderSummary]:
+    return await OrderService(session).orders(user.id, page, page_size)
+
+
+@router.get("/users/me/orders/{order_id}", response_model=Data[OrderDetail], tags=["orders"])
+async def order(order_id: UUID, user: CurrentUser, session: Session) -> Data[OrderDetail]:
+    return Data(
+        data=OrderDetail.model_validate(await OrderService(session).owned(user.id, order_id))
+    )
+
+
+@router.post(
+    "/users/me/orders/{order_id}/cancel", response_model=Data[OrderReceipt], tags=["orders"]
+)
+async def cancel_order(order_id: UUID, user: CurrentUser, session: Session) -> Data[OrderReceipt]:
+    return Data(data=await OrderService(session).cancel(user.id, order_id))
+
+
+@router.get("/admin/orders", response_model=Page[OrderSummary], tags=["fulfillment"])
+async def fulfillment_queue(
+    staff: CurrentStaff,
+    session: Session,
+    page: PageNumber = 1,
+    page_size: PageSize = 20,
+    status: OrderStatus | None = None,
+) -> Page[OrderSummary]:
+    return await OrderService(session).orders(None, page, page_size, status)
+
+
+@router.get("/admin/orders/{order_id}", response_model=Data[OrderDetail], tags=["fulfillment"])
+async def fulfillment_order(
+    order_id: UUID, staff: CurrentStaff, session: Session
+) -> Data[OrderDetail]:
+    return Data(data=OrderDetail.model_validate(await OrderService(session).staff_order(order_id)))
+
+
+@router.patch("/admin/orders/{order_id}", response_model=Data[OrderDetail], tags=["fulfillment"])
+async def update_fulfillment(
+    order_id: UUID, payload: OrderStatusPatch, staff: CurrentStaff, session: Session
+) -> Data[OrderDetail]:
+    return Data(data=await OrderService(session).transition(order_id, payload))
+
+
+@router.patch(
+    "/admin/rewards/{reward_id}", response_model=Data[RewardProductView], tags=["fulfillment"]
+)
+async def update_availability(
+    reward_id: str, payload: ProductAvailabilityPatch, staff: CurrentStaff, session: Session
+) -> Data[RewardProductView]:
+    return Data(data=await OrderService(session).availability(reward_id, payload))

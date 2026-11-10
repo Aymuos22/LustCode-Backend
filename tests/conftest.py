@@ -11,8 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.core.config import Settings
 from app.integrations.judge0 import ExecutionResult
 from app.main import create_app
-from app.models import Base, Language, Verdict
+from app.models import Base, Language, RewardProduct, Verdict
 from app.schemas import LanguageView
+from app.services.orders import INITIAL_PRODUCTS
 
 
 @pytest.fixture
@@ -95,6 +96,9 @@ async def sessions() -> AsyncIterator[async_sessionmaker[AsyncSession]]:
     try:
         async with engine.begin() as connection:
             await connection.run_sync(Base.metadata.create_all)
+        async with AsyncSession(engine) as session:
+            session.add_all([RewardProduct(**values) for values in INITIAL_PRODUCTS])
+            await session.commit()
         yield async_sessionmaker(engine, expire_on_commit=False)
     finally:
         await engine.dispose()

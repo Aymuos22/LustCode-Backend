@@ -314,8 +314,8 @@ is the current key of an active user. Runtime uploads are Git/Docker ignored.
 
 ### Streak, daily problem, and LustCoins
 
-All paths below are relative to `/api/v1`. These are backend features; the redeem UI
-can render the reward catalog as disabled placeholder cards for now.
+All paths below are relative to `/api/v1`. The reward store now supports coin-funded
+physical orders to Indian addresses, with manual staff fulfillment.
 
 | Endpoint | Authentication | Purpose |
 | --- | --- | --- |
@@ -325,8 +325,11 @@ can render the reward catalog as disabled placeholder cards for now.
 | `GET /users/me/coins` | Required | Durable balance and today's check-in state |
 | `GET /users/me/coins/transactions?page=1&page_size=20` | Required | Owned credit ledger |
 | `POST /users/me/coins/check-in` | Required | Claim today's five coins once |
-| `GET /coins/rewards` | Public | Coming-soon redemption catalog |
-| `POST /coins/redeem` | Required | Disabled placeholder; never spends coins |
+| `GET /coins/rewards` | Public | Four orderable physical products and size options |
+| `POST /coins/redeem` | Required | Place an order and spend coins atomically |
+| `GET /users/me/orders` | Required | Own order history; address-free summaries |
+| `GET /users/me/orders/{id}` | Required | Own receipt, address and shipment status |
+| `POST /users/me/orders/{id}/cancel` | Required | Cancel a placed order and refund coins |
 
 The streak endpoint returns `current_streak`, `longest_streak`, `active_today`,
 `last_activity_date`, `daily_activity`, `next_reset_at`, `timezone: "UTC"`, and
@@ -351,13 +354,15 @@ Coin rules are LustCode's own initial policy:
 - One explicit daily check-in earns 5 coins.
 - A full accepted submission for the day's selected problem earns 20 coins once,
   across all languages and retries, even if the user solved that question previously.
-- Ordinary solves, sample runs, custom inputs and playground executions earn0.
-- No signup bonus, historical backfill, streak multiplier or real redemption is enabled.
+- Ordinary solves, sample runs, custom inputs and playground executions earn 0.
+- No signup bonus, historical backfill or streak multiplier is enabled.
 
 The wallet response includes `currency: "LustCoins"`, `balance`, `total_earned`,
-`total_spent: 0`, `check_in_claimed_today`, `next_reset_at`, `rules`, and
-`redemption_enabled: false`. Balances and credits are stored in PostgreSQL, so free
-Redis restarts do not erase them. Never calculate, grant or decrement coins in the
+`total_spent`, `total_refunded`, `check_in_claimed_today`, `next_reset_at`, `rules`, and
+`redemption_enabled: true`. `total_spent` is gross redemption spend; refunds do not
+inflate `total_earned`. Balance equals earned minus spent plus refunded. The ledger
+contains positive rewards/refunds and negative redemption entries. Everything is stored
+in PostgreSQL, so free Redis restarts do not erase balances. Never grant or decrement coins in the
 frontend. Display the server values and refetch the wallet after a terminal submission
 or a successful check-in.
 
@@ -365,8 +370,9 @@ Check-in accepts no body or `{}`. It returns HTTP 200 with `awarded`, `credited_
 `transaction` and `wallet`. Repeated or simultaneous requests return the same owned
 transaction and `credited_amount: 0`, without adding another credit. Extra fields such
 as `amount`, `date` or `user_id` are rejected 422. The transaction page contains
-`id`, `amount`, `reason` (`daily_check_in` or `daily_problem`), `reward_date`,
-`question_id`, `submission_id` and `created_at`. It never exposes another user's history.
+`id`, signed `amount`, `reason` (`daily_check_in`, `daily_problem`, `redemption`, or
+`redemption_refund`), `reward_date`, `question_id`, `submission_id`, `order_id`, and
+`created_at`. It never exposes another user's history.
 
 POTD eligibility is captured on server-side graded admission, using the submission's
 UTC creation date. A submission queued before midnight can finish after midnight and
@@ -374,16 +380,102 @@ still earn its original day's reward. Successful grading and coin credit commit 
 transaction. No frontend claim endpoint is needed for POTD. Refresh its completion
 state and the wallet after Submit; polling a sample Run must not award coins.
 
-The reward catalog has `redemption_enabled: false` and four placeholders: profile
-badges, editor themes, stickers and a T-shirt. Each has `id`, `name`, `description`,
-`coin_cost: null`, `status: "coming_soon"`, `is_placeholder: true`, and
-`redeemable: false`. Display **Coming soon** / **Pricing TBD**, not a zero-coin price.
-Disable purchase/redeem buttons and do not collect shipping or payment information.
-`POST /coins/redeem` accepts `{"reward_id":"profile-badges"}` and returns 409
-`redemption_unavailable`; unknown IDs return 404. Neither path changes the balance.
+### Physical product ordering
 
-Apply migration `5f5fc6a35eec` before serving this version. Update every API and worker
-sharing the database together: older evaluators do not issue the new credits.
+| Product ID | Product | Coins | Size |
+| --- | --- | --- | --- |
+| `lustcode-stickers` | Sticker pack | 500 | None |
+| `lustcode-notebook` | Notebook | 1,000 | None |
+| `lustcode-shirt` | T-shirt | 2,000 | XS, S, M, L, XL, XXL |
+| `lustcode-hoodie` | Hoodie | 4,000 | XS, S, M, L, XL, XXL |
+
+Read prices and availability from `GET /coins/rewards`. The catalog has
+`redemption_enabled: true`, `fulfillment_mode: "manual"`, `shipping_countries: ["IN"]`,
+and `shipping_cost_coins: 0`. Products have `coin_cost`, `available_sizes`,
+`stock_quantity`, `status` (`available`, `out_of_stock`, `unavailable`),
+`is_placeholder: false`, and `redeemable`. A null stock quantity means manual/on-demand
+fulfillment, not a claimed physical inventory count. Staff can pause a product or set
+an actual stock quantity. One redemption orders one item; no cash checkout is involved.
+
+Show an address form and confirm the server's price before ordering. Send a stable UUID
+`Idempotency-Key` header for each checkout intent. Retain that same key when retrying
+after a timeout or double click; generate a new key only for a new order.
+
+```http
+POST /api/v1/coins/redeem
+Authorization: Bearer <access_token>
+Content-Type: application/json
+Idempotency-Key: <crypto.randomUUID() retained for this checkout>
+```
+
+```json
+{
+  "reward_id": "lustcode-shirt",
+  "size": "M",
+  "shipping_address": {
+    "full_name": "Test Recipient",
+    "phone": "9000000000",
+    "address_line1": "123 Test Street",
+    "address_line2": null,
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "postal_code": "560001",
+    "country_code": "IN"
+  }
+}
+```
+
+Only Indian addresses are accepted. PIN codes have six digits; Indian mobile numbers
+normalize to `+91` format. This validates format, not the existence of an address;
+fulfillment staff must confirm dispatch details. Apparel requires a listed size;
+non-apparel products reject a size. Do not send price, quantity, balance, status or
+owner fields: the server controls them. Extra fields are rejected 422.
+
+The first order returns 201 with `data: {order, wallet, replayed:false, coins_spent,
+coins_refunded:0}`. An identical retry returns 200 with the same order, `replayed:true`
+and `coins_spent:0`. Reusing a key with a different address/product/size returns 409
+`idempotency_conflict`. Insufficient balance returns 409 `insufficient_coins`; unavailable
+and out-of-stock products return 409; unknown products return 404. Missing or malformed
+idempotency keys return 422. The order, stock reservation and ledger debit commit together.
+
+Orders start as `placed`, awaiting **manual dispatch**. Customer history uses the same
+page/page_size envelope as submissions and omits addresses. An owned order detail returns
+its immutable product/price/size/address snapshot, status, timestamps, courier and tracking
+number. Refresh the wallet and order history after checkout. Addresses must not be stored
+in analytics, request logs or public profile components.
+
+Customers can cancel only a `placed` order. Cancellation returns an order receipt and
+refunds its original coin cost atomically; repeats never refund twice. Retrying the old
+checkout key after cancellation returns that cancelled order, without charging again.
+Once processing starts, customer cancellation returns 409 `order_not_cancellable`.
+Refunds appear as positive `redemption_refund` transactions linked to the original order.
+
+### Manual fulfillment
+
+Private `GET /users/me` adds `is_staff`. Staff authority is checked against the database
+on every request; no client request or token role claim can grant it.
+
+| Endpoint | Staff operation |
+| --- | --- |
+| `GET /admin/orders?status=placed` | Paginated queue; optional status filter |
+| `GET /admin/orders/{id}` | Read shipping details |
+| `PATCH /admin/orders/{id}` | Update status and shipment tracking |
+| `PATCH /admin/rewards/{id}` | Set `active` and/or `stock_quantity` |
+
+Allowed status transitions are `placed → processing → shipped → delivered`, or staff
+cancellation from `placed`/`processing` with a one-time coin refund. Marking shipped
+requires `courier` and `tracking_number`. Terminal orders cannot move backwards or be
+refunded through cancellation. There is no courier booking or automatic shipping/email
+integration. Staff must physically fulfill the products and supply real tracking details.
+
+An operator with private backend database access can grant/revoke a named existing
+account using `python -m app.fulfillment_admin --username admin` (add `--revoke` to revoke).
+No account receives staff privileges by signup or by default. Customer credentials cannot
+read another customer's order or address; fulfillment routes return 403 to non-staff.
+
+Apply migration `55b1518bb710` before serving this version. It protects both new tables
+with RLS, preserves existing earnings, and refuses downgrade if redemption history exists.
+Update every API and worker sharing the database together.
 
 Authenticated `/users/me/statistics` retains all previous fields and adds:
 

@@ -3,7 +3,7 @@
 from datetime import UTC, date, datetime, time, timedelta
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,8 +22,6 @@ from app.schemas import (
     CoinTransactionView,
     CoinWallet,
     Page,
-    RewardCatalog,
-    RewardPlaceholder,
 )
 
 CHECK_IN_COINS = 5
@@ -37,33 +35,6 @@ def day_window(day: date) -> tuple[datetime, datetime]:
 
 def rules() -> CoinRules:
     return CoinRules(daily_check_in=CHECK_IN_COINS, daily_problem=DAILY_PROBLEM_COINS)
-
-
-def reward_catalog() -> RewardCatalog:
-    return RewardCatalog(
-        rewards=[
-            RewardPlaceholder(
-                id="profile-badges",
-                name="Profile badges",
-                description="Collectible profile badges. Details and pricing coming soon.",
-            ),
-            RewardPlaceholder(
-                id="editor-themes",
-                name="Editor themes",
-                description="Additional editor themes. Details and pricing coming soon.",
-            ),
-            RewardPlaceholder(
-                id="lustcode-stickers",
-                name="LustCode stickers",
-                description="Sticker rewards. Availability and pricing coming soon.",
-            ),
-            RewardPlaceholder(
-                id="lustcode-shirt",
-                name="LustCode T-shirt",
-                description="Merchandise rewards. Availability and pricing coming soon.",
-            ),
-        ]
-    )
 
 
 class CoinService:
@@ -83,6 +54,8 @@ class CoinService:
         question_id: UUID | None = None,
         submission_id: UUID | None = None,
     ) -> tuple[CoinTransaction, bool]:
+        if reason not in (CoinReason.DAILY_CHECK_IN, CoinReason.DAILY_PROBLEM):
+            raise ValueError("Only earned credits use the reward grant method")
         amount = CHECK_IN_COINS if reason == CoinReason.DAILY_CHECK_IN else DAILY_PROBLEM_COINS
         key = f"{reason.value}:{day.isoformat()}"
         identifier = await self.session.scalar(
@@ -111,11 +84,50 @@ class CoinService:
 
     async def wallet(self, user_id: UUID, now: datetime | None = None) -> CoinWallet:
         day = (now or datetime.now(UTC)).astimezone(UTC).date()
-        total = await self.session.scalar(
-            select(func.coalesce(func.sum(CoinTransaction.amount), 0)).where(
-                CoinTransaction.user_id == user_id
+        earned, spent, refunded = (
+            await self.session.execute(
+                select(
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    CoinTransaction.reason.in_(
+                                        [CoinReason.DAILY_CHECK_IN, CoinReason.DAILY_PROBLEM]
+                                    ),
+                                    CoinTransaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ),
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    CoinTransaction.reason == CoinReason.REDEMPTION,
+                                    -CoinTransaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ),
+                    func.coalesce(
+                        func.sum(
+                            case(
+                                (
+                                    CoinTransaction.reason == CoinReason.REDEMPTION_REFUND,
+                                    CoinTransaction.amount,
+                                ),
+                                else_=0,
+                            )
+                        ),
+                        0,
+                    ),
+                ).where(CoinTransaction.user_id == user_id)
             )
-        )
+        ).one()
         checked_in = await self.session.scalar(
             select(CoinTransaction.id).where(
                 CoinTransaction.user_id == user_id,
@@ -123,8 +135,10 @@ class CoinService:
             )
         )
         return CoinWallet(
-            balance=total or 0,
-            total_earned=total or 0,
+            balance=earned - spent + refunded,
+            total_earned=earned,
+            total_spent=spent,
+            total_refunded=refunded,
             check_in_claimed_today=checked_in is not None,
             next_reset_at=day_window(day)[1],
             rules=rules(),

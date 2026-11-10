@@ -231,9 +231,13 @@ a dedicated activity-streak endpoint (`GET /users/me/streak`), and LustCoins. Da
 check-in earns 5 coins; a full accepted POTD submission earns 20 once per user/date.
 There are no ordinary-solve or run rewards. PostgreSQL stores an idempotent credit
 ledger; free Redis restarts do not reset balances. The wallet, transaction history,
-earning rules, and four disabled redemption placeholders are documented in the
-frontend handoff. Redemption remains unavailable and never deducts coins. Apply
-`5f5fc6a35eec` and update every API/worker sharing the database before enabling the UI.
+earning rules, and physical product ordering are documented in the frontend handoff.
+The four products cost 500/1000/2000/4000 coins; checkout validates an Indian shipping
+address and atomically reserves stock, creates an order and deducts coins. Idempotent
+retries cannot charge twice. Customers have private order history and can cancel placed
+orders for a one-time refund. Fulfillment staff can process, record tracking, deliver or
+cancel orders; actual shipping is manual. No courier booking is configured. Apply
+`55b1518bb710` and update every API/worker sharing the database before enabling the UI.
 
 The frontend feature handoff is [FRONTEND_API_HANDOFF.md](FRONTEND_API_HANDOFF.md), with
 exact new methods, payloads, filters, draft conflict behavior, and proxy requirements.

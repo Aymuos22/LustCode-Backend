@@ -60,6 +60,16 @@ class SubmissionMode(StrEnum):
 class CoinReason(StrEnum):
     DAILY_CHECK_IN = "daily_check_in"
     DAILY_PROBLEM = "daily_problem"
+    REDEMPTION = "redemption"
+    REDEMPTION_REFUND = "redemption_refund"
+
+
+class OrderStatus(StrEnum):
+    PLACED = "placed"
+    PROCESSING = "processing"
+    SHIPPED = "shipped"
+    DELIVERED = "delivered"
+    CANCELLED = "cancelled"
 
 
 def enum_type(enum: type[StrEnum]) -> Enum:
@@ -87,6 +97,7 @@ class User(IdentityMixin, Base):
     password_hash: Mapped[str] = mapped_column(String(512))
     bio: Mapped[str] = mapped_column(String(500), default="")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_staff: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     avatar_key: Mapped[str | None] = mapped_column(String(36))
     preferences: Mapped[dict] = mapped_column(
         JSON().with_variant(JSONB, "postgresql"), default=dict, server_default=text("'{}'::jsonb")
@@ -263,8 +274,75 @@ class CoinTransaction(IdentityMixin, Base):
     submission_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("submissions.id", ondelete="SET NULL")
     )
+    order_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("reward_orders.id", ondelete="CASCADE", name="fk_coin_transaction_order")
+    )
     __table_args__ = (
         UniqueConstraint("user_id", "event_key"),
-        CheckConstraint("amount > 0"),
+        UniqueConstraint("order_id", "reason", name="uq_coin_order_reason"),
+        CheckConstraint(
+            "(reason IN ('daily_check_in','daily_problem') AND amount > 0 AND order_id IS NULL) OR "
+            "(reason = 'redemption' AND amount < 0 AND order_id IS NOT NULL) OR "
+            "(reason = 'redemption_refund' AND amount > 0 AND order_id IS NOT NULL)",
+            name="ck_coin_transaction_direction",
+        ),
         Index("ix_coin_transactions_user_created", "user_id", "created_at"),
+    )
+
+
+class RewardProduct(Base):
+    __tablename__ = "reward_products"
+    id: Mapped[str] = mapped_column(String(60), primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(String(500))
+    coin_cost: Mapped[int] = mapped_column(Integer)
+    available_sizes: Mapped[list[str]] = mapped_column(
+        JSON().with_variant(JSONB, "postgresql"), default=list
+    )
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    stock_quantity: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    __table_args__ = (
+        CheckConstraint("coin_cost > 0"),
+        CheckConstraint("stock_quantity IS NULL OR stock_quantity >= 0"),
+    )
+
+    @property
+    def redeemable(self) -> bool:
+        return self.active and (self.stock_quantity is None or self.stock_quantity > 0)
+
+    @property
+    def status(self) -> str:
+        return (
+            "unavailable"
+            if not self.active
+            else "out_of_stock"
+            if self.stock_quantity == 0
+            else "available"
+        )
+
+
+class RewardOrder(IdentityMixin, Base):
+    __tablename__ = "reward_orders"
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    reward_id: Mapped[str] = mapped_column(ForeignKey("reward_products.id", ondelete="RESTRICT"))
+    product_name: Mapped[str] = mapped_column(String(120))
+    coin_cost: Mapped[int] = mapped_column(Integer)
+    size: Mapped[str | None] = mapped_column(String(8))
+    shipping_address: Mapped[dict] = mapped_column(JSON().with_variant(JSONB, "postgresql"))
+    status: Mapped[OrderStatus] = mapped_column(enum_type(OrderStatus), default=OrderStatus.PLACED)
+    idempotency_key: Mapped[UUID] = mapped_column(Uuid)
+    request_fingerprint: Mapped[str] = mapped_column(String(64))
+    stock_reserved: Mapped[bool] = mapped_column(Boolean, default=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    shipped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    courier: Mapped[str | None] = mapped_column(String(80))
+    tracking_number: Mapped[str | None] = mapped_column(String(100))
+    __table_args__ = (
+        UniqueConstraint("user_id", "idempotency_key", name="uq_order_user_idempotency"),
+        CheckConstraint("coin_cost > 0"),
+        Index("ix_reward_orders_user_created", "user_id", "created_at"),
+        Index("ix_reward_orders_status_created", "status", "created_at"),
     )

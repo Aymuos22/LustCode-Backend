@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-10",
+  "status": "local_verified_deployment_pending",
+  "shipping": "India only; one product per order; phone and PIN format validation; manual fulfillment",
+  "products": [
+    {
+      "id": "lustcode-stickers",
+      "coins": 500
+    },
+    {
+      "id": "lustcode-notebook",
+      "coins": 1000
+    },
+    {
+      "id": "lustcode-shirt",
+      "coins": 2000
+    },
+    {
+      "id": "lustcode-hoodie",
+      "coins": 4000
+    }
+  ],
+  "security": [
+    "Per-user idempotency key plus normalized request fingerprint",
+    "User-row lock serializes reward credits, spending and refunds",
+    "Locked inventory checks prevent concurrent overselling",
+    "Order and signed ledger debit commit atomically; cancellation and refund commit atomically",
+    "Prices, owner, quantity and order status are server-controlled",
+    "Only owner and database-authorized staff can read a shipping address",
+    "Address-free order lists; address inputs omitted from validation/log diagnostics",
+    "No public staff grants; database role checked on every request"
+  ],
+  "verification": {
+    "pytest": {
+      "passed": 410,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 57.39
+    },
+    "new_order_tests": 30,
+    "ruff": "passed; 113 files formatted",
+    "mypy": "passed; 72 application source files",
+    "migration": "Migrated-schema checkout/refund, invalid debit constraint, redemption-history downgrade protection, schema check, downgrade base, upgrade head, schema check all passed on disposable PostgreSQL16",
+    "head": "55b1518bb710",
+    "new_rls_tables": [
+      "reward_products",
+      "reward_orders"
+    ],
+    "docker_build": "passed",
+    "local_api_worker": "updated and healthy"
+  },
+  "admin": {
+    "username": "admin",
+    "created": true,
+    "is_staff": true,
+    "credentials_file": ".env.fulfillment-admin",
+    "file_mode": "0600",
+    "git_ignored": true,
+    "credentials_in_report": false
+  },
+  "live_verification": "pending Render deployment",
+  "remaining_limitations": [
+    "Fulfillment is manual; no courier booking, notifications, physical procurement or actual shipment was performed.",
+    "Initial stock is not asserted; null stock quantity represents manual/on-demand fulfillment. Staff must verify availability and can pause products or set actual quantities.",
+    "Customer self-cancellation is available only before processing; return/refund workflows after shipment are future work.",
+    "Frontend checkout/fulfillment UI must use the documented APIs; backend changes only."
+  ]
+}

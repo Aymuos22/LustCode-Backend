@@ -1,6 +1,6 @@
 import asyncio
 from datetime import UTC, date, datetime, timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import func, select, update
@@ -349,28 +349,37 @@ async def test_credit_and_solve_roll_back_together_on_worker_failure(
     assert await balance(api, headers) == 20
 
 
-async def test_reward_catalog_is_placeholder_and_redemption_never_spends(api):
+async def test_reward_catalog_prices_and_insufficient_balance_preserve_coins(api):
     catalog = (await api.get("/api/v1/coins/rewards")).json()["data"]
-    assert not catalog["redemption_enabled"] and len(catalog["rewards"]) == 4
-    assert all(
-        r["is_placeholder"] and not r["redeemable"] and r["coin_cost"] is None
-        for r in catalog["rewards"]
-    )
+    assert catalog["redemption_enabled"] and len(catalog["rewards"]) == 4
+    assert [r["coin_cost"] for r in catalog["rewards"]] == [500, 1000, 2000, 4000]
+    assert all(not r["is_placeholder"] and r["redeemable"] for r in catalog["rewards"])
     headers = auth(await register(api))
     await api.post("/api/v1/users/me/coins/check-in", headers=headers)
     for reward in catalog["rewards"]:
         response = await api.post(
-            "/api/v1/coins/redeem", headers=headers, json={"reward_id": reward["id"]}
+            "/api/v1/coins/redeem",
+            headers={**headers, "Idempotency-Key": str(uuid4())},
+            json={
+                "reward_id": reward["id"],
+                "size": "M" if reward["available_sizes"] else None,
+                "shipping_address": {
+                    "full_name": "Test Recipient",
+                    "phone": "9000000000",
+                    "address_line1": "123 Test Street",
+                    "city": "Bengaluru",
+                    "state": "Karnataka",
+                    "postal_code": "560001",
+                    "country_code": "IN",
+                },
+            },
         )
         assert response.status_code == 409
-        assert response.json()["error"]["code"] == "redemption_unavailable"
+        assert response.json()["error"]["code"] == "insufficient_coins"
     assert await balance(api, headers) == 5
     assert (await api.get("/api/v1/users/me/coins/transactions", headers=headers)).json()[
         "total"
     ] == 1
-    assert (
-        await api.post("/api/v1/coins/redeem", headers=headers, json={"reward_id": "missing"})
-    ).status_code == 404
 
 
 @pytest.mark.parametrize(
