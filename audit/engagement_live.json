@@ -1,0 +1,66 @@
+{
+  "checked_at": "2026-11-10T07:35:15.622371+00:00",
+  "base_url": "https://lustcode-backend.onrender.com/api/v1",
+  "status": "passed",
+  "checks": {
+    "existing_statistics_and_dedicated_streak": "passed",
+    "stable_shared_daily_problem": "passed",
+    "concurrent_checkin_awards_once": "passed",
+    "samples_earn_zero_coins": "passed",
+    "accepted_potd_awards_twenty_and_completes": "passed",
+    "repeat_accepted_potd_awards_zero": "passed",
+    "owned_transaction_history": "passed",
+    "placeholder_redemption_disabled_no_spend": "passed"
+  },
+  "executions": [
+    {
+      "id": "0f0d9c7e-d9eb-4de7-bbe7-0a4dbaec3a9a",
+      "scope": "samples",
+      "language": "python",
+      "status": "accepted",
+      "total_tests": 3,
+      "passed_tests": 3
+    },
+    {
+      "id": "dcfbe887-de97-49db-b9f1-fa2f9f1a36f1",
+      "scope": "graded_first",
+      "language": "python",
+      "status": "accepted",
+      "total_tests": 15,
+      "passed_tests": 15
+    },
+    {
+      "id": "c4a21024-0404-404e-ad63-283183294cb9",
+      "scope": "graded_repeat",
+      "language": "python",
+      "status": "accepted",
+      "total_tests": 15,
+      "passed_tests": 15
+    }
+  ],
+  "daily_problem": {
+    "date": "2026-11-10",
+    "question_id": "a1d86145-2921-5526-b3d3-ef43748f68fa",
+    "source_number": 31,
+    "reward_coins": 20
+  },
+  "wallet_after": {
+    "currency": "LustCoins",
+    "balance": 25,
+    "total_earned": 25,
+    "total_spent": 0,
+    "check_in_claimed_today": true,
+    "next_reset_at": "2026-11-11T00:00:00Z",
+    "rules": {
+      "currency": "LustCoins",
+      "daily_check_in": 5,
+      "daily_problem": 20,
+      "ordinary_solve": 0,
+      "sample_or_custom_run": 0,
+      "timezone": "UTC",
+      "redemption_enabled": false
+    },
+    "redemption_enabled": false
+  },
+  "finished_at": "2026-11-10T07:38:06.280445+00:00"
+}

@@ -1,6 +1,6 @@
 {
   "date": "2026-11-10",
-  "status": "local_verification_passed_deployment_pending",
+  "status": "passed_local_and_live",
   "features": {
     "streak": "Existing statistics streak retained; added longest streak and dedicated owned endpoint.",
     "potd": "Persisted shared UTC daily selection from published, verified judgeable questions.",
@@ -53,7 +53,41 @@
     "disabled placeholder redemptions preserve balance",
     "credits survive Redis cache reset"
   ],
-  "live_checks": "pending new Render deployment",
+  "live_checks": {
+    "status": "passed",
+    "report": "audit/engagement_live.json",
+    "checks": {
+      "existing_statistics_and_dedicated_streak": "passed",
+      "stable_shared_daily_problem": "passed",
+      "concurrent_checkin_awards_once": "passed",
+      "samples_earn_zero_coins": "passed",
+      "accepted_potd_awards_twenty_and_completes": "passed",
+      "repeat_accepted_potd_awards_zero": "passed",
+      "owned_transaction_history": "passed",
+      "placeholder_redemption_disabled_no_spend": "passed"
+    },
+    "real_judge0_executions": 3,
+    "tests_executed": [
+      3,
+      15,
+      15
+    ],
+    "test_account_final_balance": 25,
+    "local_worker_paused_during_verification": true
+  },
   "frontend": "Backend contract and placeholders supplied; React redeem UI remains future work.",
-  "hosting": "Existing free Render API and free Key Value retained; no paid resources."
+  "hosting": "Existing free Render API and free Key Value retained; no paid resources.",
+  "deployed_source_commit": "ddb832a",
+  "deploy_id": "dep-dbpchm5g1s2s73c8o6ig",
+  "live_base_url": "https://lustcode-backend.onrender.com/api/v1",
+  "database_verification": {
+    "head": "5f5fc6a35eec",
+    "tables_rls": {
+      "coin_transactions": true,
+      "daily_challenges": true
+    },
+    "public_policies": 0
+  },
+  "ci": "GitHub CI passed before automatic Render deployment",
+  "local_services": "API and dedicated worker updated; worker restored after isolated Render checks"
 }
