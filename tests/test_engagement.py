@@ -8,6 +8,7 @@ from sqlalchemy import func, select, update
 from app.core.errors import LeaseLost
 from app.integrations.judge0 import ExecutionResult
 from app.models import (
+    CoinReason,
     CoinTransaction,
     DailyChallenge,
     Difficulty,
@@ -56,15 +57,15 @@ async def test_checkin_is_idempotent_owned_and_survives_redis_reset(api, redis):
     response = await api.post("/api/v1/users/me/coins/check-in", headers=owner)
     assert response.status_code == 200
     first = response.json()["data"]
-    assert first["awarded"] and first["credited_amount"] == 5
-    assert first["wallet"]["balance"] == 5 and first["wallet"]["check_in_claimed_today"]
+    assert first["awarded"] and first["credited_amount"] == 1
+    assert first["wallet"]["balance"] == 1 and first["wallet"]["check_in_claimed_today"]
     repeated = (await api.post("/api/v1/users/me/coins/check-in", headers=owner, json={})).json()[
         "data"
     ]
     assert not repeated["awarded"] and repeated["credited_amount"] == 0
     assert repeated["transaction"]["id"] == first["transaction"]["id"]
     await redis.flushall()
-    assert await balance(api, owner) == 5 and await balance(api, other) == 0
+    assert await balance(api, owner) == 1 and await balance(api, other) == 0
     history = (await api.get("/api/v1/users/me/coins/transactions", headers=owner)).json()
     assert history["total"] == 1 and history["data"][0]["reason"] == "daily_check_in"
     assert "event_key" not in history["data"][0]
@@ -79,11 +80,77 @@ async def test_parallel_checkins_grant_one_credit(api, sessions):
         *[api.post("/api/v1/users/me/coins/check-in", headers=headers) for _ in range(12)]
     )
     assert all(r.status_code == 200 for r in responses)
-    assert sum(r.json()["data"]["credited_amount"] for r in responses) == 5
+    assert sum(r.json()["data"]["credited_amount"] for r in responses) == 1
     assert len({r.json()["data"]["transaction"]["id"] for r in responses}) == 1
-    assert await balance(api, headers) == 5
+    assert await balance(api, headers) == 1
     async with sessions() as session:
         assert await session.scalar(select(func.count()).select_from(CoinTransaction)) == 1
+
+
+async def test_public_coin_rules_match_wallet_and_daily_problem(api, question_id):
+    expected = {
+        "currency": "LustCoins",
+        "daily_check_in": 1,
+        "daily_problem": 2,
+        "ordinary_solve": 0,
+        "sample_or_custom_run": 0,
+        "timezone": "UTC",
+        "redemption_enabled": True,
+    }
+    assert (await api.get("/api/v1/coins/rules")).json()["data"] == expected
+    headers = auth(await register(api))
+    wallet = (await api.get("/api/v1/users/me/coins", headers=headers)).json()["data"]
+    daily = (await api.get("/api/v1/questions/daily")).json()["data"]
+    assert wallet["rules"] == expected and daily["reward_coins"] == 2
+
+
+async def test_rate_change_preserves_past_credits_and_claimed_rewards(api, sessions, monkeypatch):
+    class Clock(datetime):
+        value = datetime(2026, 11, 10, 12, tzinfo=UTC)
+
+        @classmethod
+        def now(cls, tz=None):
+            return cls.value.astimezone(tz) if tz else cls.value.replace(tzinfo=None)
+
+    monkeypatch.setattr("app.services.coins.datetime", Clock)
+    headers = auth(await register(api))
+    user_id = UUID((await api.get("/api/v1/users/me", headers=headers)).json()["data"]["id"])
+    day = Clock.value.date()
+    async with sessions() as session:
+        for reason, amount in [(CoinReason.DAILY_CHECK_IN, 5), (CoinReason.DAILY_PROBLEM, 20)]:
+            session.add(
+                CoinTransaction(
+                    user_id=user_id,
+                    amount=amount,
+                    reason=reason,
+                    reward_date=day,
+                    event_key=f"{reason.value}:{day.isoformat()}",
+                )
+            )
+        await session.commit()
+    repeated = (await api.post("/api/v1/users/me/coins/check-in", headers=headers)).json()["data"]
+    assert not repeated["awarded"] and repeated["credited_amount"] == 0
+    assert repeated["transaction"]["amount"] == 5 and repeated["wallet"]["balance"] == 25
+    async with sessions() as session:
+        service = CoinService(session)
+        await service.lock_user(user_id)
+        previous, granted = await service.credit(user_id, CoinReason.DAILY_PROBLEM, day)
+        assert not granted and previous.amount == 20
+        await session.commit()
+    Clock.value += timedelta(days=1)
+    new = (await api.post("/api/v1/users/me/coins/check-in", headers=headers)).json()["data"]
+    assert new["credited_amount"] == 1 and new["wallet"]["balance"] == 26
+    async with sessions() as session:
+        service = CoinService(session)
+        await service.lock_user(user_id)
+        new_daily, granted = await service.credit(
+            user_id, CoinReason.DAILY_PROBLEM, Clock.value.date()
+        )
+        assert granted and new_daily.amount == 2
+        await session.commit()
+    assert await balance(api, headers) == 28
+    history = (await api.get("/api/v1/users/me/coins/transactions", headers=headers)).json()
+    assert sorted(t["amount"] for t in history["data"]) == [1, 2, 5, 20]
 
 
 @pytest.mark.parametrize(
@@ -111,7 +178,7 @@ async def test_checkin_changes_at_utc_midnight(api, monkeypatch):
     Clock.value += timedelta(seconds=1)
     second = (await api.post("/api/v1/users/me/coins/check-in", headers=headers)).json()["data"]
     assert second["transaction"]["reward_date"] == "2026-11-11"
-    assert second["credited_amount"] == 5 and second["wallet"]["balance"] == 10
+    assert second["credited_amount"] == 1 and second["wallet"]["balance"] == 2
 
 
 async def test_daily_problem_is_public_persisted_and_shared(api, sessions, question_id):
@@ -120,7 +187,7 @@ async def test_daily_problem_is_public_persisted_and_shared(api, sessions, quest
     values = [r.json()["data"] for r in responses]
     assert all(v["question"]["id"] == str(question_id) for v in values)
     assert all(v["question"]["is_judgeable"] and v["completed"] is None for v in values)
-    assert all(v["reward_coins"] == 20 and v["timezone"] == "UTC" for v in values)
+    assert all(v["reward_coins"] == 2 and v["timezone"] == "UTC" for v in values)
     assert "statement" not in values[0]["question"]
     async with sessions() as session:
         assert await session.scalar(select(func.count()).select_from(DailyChallenge)) == 1
@@ -199,13 +266,13 @@ async def test_accepted_potd_awards_once_across_languages(
         )
         assert response.status_code == 202
         assert await EvaluationWorker(sessions, provider, settings).once()
-        assert await balance(api, headers) == 20
+        assert await balance(api, headers) == 2
     daily = (await api.get("/api/v1/questions/daily", headers=headers)).json()["data"]
     assert daily["completed"] and daily["reward_claimed"]
     history = (await api.get("/api/v1/users/me/coins/transactions", headers=headers)).json()
     assert history["total"] == 1 and history["data"][0]["question_id"] == str(question_id)
     await api.post("/api/v1/users/me/coins/check-in", headers=headers)
-    assert await balance(api, headers) == 25
+    assert await balance(api, headers) == 3
 
 
 @pytest.mark.parametrize(
@@ -286,7 +353,7 @@ async def test_midnight_queue_delay_uses_submission_day(
     assert await EvaluationWorker(sessions, provider, settings).once()
     history = (await api.get("/api/v1/users/me/coins/transactions", headers=headers)).json()
     assert history["total"] == 1 and history["data"][0]["reward_date"] == yesterday.isoformat()
-    assert await balance(api, headers) == 20
+    assert await balance(api, headers) == 2
 
 
 async def test_parallel_finish_and_retry_cannot_duplicate_potd_credit(
@@ -310,7 +377,7 @@ async def test_parallel_finish_and_retry_cannot_duplicate_potd_credit(
     await asyncio.wait_for(
         asyncio.gather(*[worker.finish(row.id, row.lease_id) for row in claimed]), timeout=5
     )
-    assert await balance(api, headers) == 20
+    assert await balance(api, headers) == 2
     with pytest.raises(LeaseLost):
         await worker.finish(claimed[0].id, claimed[0].lease_id)
     assert (await api.get("/api/v1/users/me/coins/transactions", headers=headers)).json()[
@@ -346,7 +413,7 @@ async def test_credit_and_solve_roll_back_together_on_worker_failure(
         assert await session.scalar(select(UserProgress.solved_at)) is None
         lease = row.lease_id
     await worker.finish(identifier, lease)
-    assert await balance(api, headers) == 20
+    assert await balance(api, headers) == 2
 
 
 async def test_reward_catalog_prices_and_insufficient_balance_preserve_coins(api):
@@ -376,7 +443,7 @@ async def test_reward_catalog_prices_and_insufficient_balance_preserve_coins(api
         )
         assert response.status_code == 409
         assert response.json()["error"]["code"] == "insufficient_coins"
-    assert await balance(api, headers) == 5
+    assert await balance(api, headers) == 1
     assert (await api.get("/api/v1/users/me/coins/transactions", headers=headers)).json()[
         "total"
     ] == 1
@@ -419,7 +486,7 @@ async def test_potd_already_solved_before_today_can_earn_daily_reward(
         json={"question_id": str(question_id), "language": "python", "source_code": "fixture"},
     )
     assert await EvaluationWorker(sessions, provider, settings).once()
-    assert await balance(api, headers) == 20
+    assert await balance(api, headers) == 2
     async with sessions() as session:
         assert await session.scalar(select(UserProgress.solved_at)) == old_solved
 

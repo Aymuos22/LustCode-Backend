@@ -228,7 +228,8 @@ configuration is rejected for `ce.judge0.com`. No RapidAPI credentials are neede
 
 Daily engagement now has a persisted UTC Problem of the Day (`GET /questions/daily`),
 a dedicated activity-streak endpoint (`GET /users/me/streak`), and LustCoins. Daily
-check-in earns 5 coins; a full accepted POTD submission earns 20 once per user/date.
+check-in earns 1 coin; a full accepted POTD submission earns 2 once per user/date.
+New grants use these rates; existing ledger entries and balances are preserved.
 There are no ordinary-solve or run rewards. PostgreSQL stores an idempotent credit
 ledger; free Redis restarts do not reset balances. The wallet, transaction history,
 earning rules, and physical product ordering are documented in the frontend handoff.

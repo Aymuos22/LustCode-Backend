@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-10",
+  "status": "local_verified_deployment_pending",
+  "rates": {
+    "daily_check_in": 1,
+    "accepted_daily_problem": 2,
+    "maximum_per_utc_reward_day": 3
+  },
+  "historical_balances": "Existing ledger credits, debits and refunds are unchanged; claimed rewards stay claimed. No data migration or historical repricing.",
+  "verification": {
+    "focused_pytest": {
+      "passed": 63,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 50.2
+    },
+    "initial_test_run": {
+      "passed": 44,
+      "failed": 19,
+      "resolution": "Corrected test-only HTTP status assertions inadvertently edited alongside amount expectations; subsequent focused run passed."
+    },
+    "ruff_check": "passed",
+    "ruff_format": "passed; 115 files",
+    "mypy": "passed; 72 source files",
+    "docker_build": "passed",
+    "coverage": [
+      "Public rules, wallet rules and daily challenge amount agree",
+      "Concurrent check-ins award one coin exactly once",
+      "Accepted graded POTD awards two coins once across Python/Java/C++",
+      "Combined daily check-in and POTD balance is three",
+      "Past five- and twenty-coin credits and same-day claim deduplication survive the rate change",
+      "UTC rollover, deferred grading, worker rollback, no run rewards and redemption regression tests"
+    ]
+  },
+  "live_verification": "pending deployment",
+  "frontend": "Read /coins/rules, wallet.rules and daily reward_coins; API shapes unchanged."
+}

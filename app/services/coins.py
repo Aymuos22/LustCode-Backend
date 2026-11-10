@@ -24,8 +24,8 @@ from app.schemas import (
     Page,
 )
 
-CHECK_IN_COINS = 5
-DAILY_PROBLEM_COINS = 20
+CHECK_IN_COINS = 1
+DAILY_PROBLEM_COINS = 2
 
 
 def day_window(day: date) -> tuple[datetime, datetime]:

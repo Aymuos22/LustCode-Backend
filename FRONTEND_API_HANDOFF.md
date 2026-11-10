@@ -324,7 +324,7 @@ physical orders to Indian addresses, with manual staff fulfillment.
 | `GET /coins/rules` | Public | Authoritative earning amounts and redemption capability |
 | `GET /users/me/coins` | Required | Durable balance and today's check-in state |
 | `GET /users/me/coins/transactions?page=1&page_size=20` | Required | Owned credit ledger |
-| `POST /users/me/coins/check-in` | Required | Claim today's five coins once |
+| `POST /users/me/coins/check-in` | Required | Claim today's check-in reward once |
 | `GET /coins/rewards` | Public | Four orderable physical products and size options |
 | `POST /coins/redeem` | Required | Place an order and spend coins atomically |
 | `GET /users/me/orders` | Required | Own order history; address-free summaries |
@@ -339,7 +339,7 @@ do not extend it. Yesterday's activity retains the current streak until today's 
 deadline. Longest streak uses all historical graded activity, not just the 365-day calendar.
 
 `GET /questions/daily` returns `date`, `starts_at`, `expires_at`, `timezone: "UTC"`,
-`question` (the existing `QuestionSummary`), `reward_coins: 20`, `completed`, and
+`question` (the existing `QuestionSummary`), `reward_coins: 2`, `completed`, and
 `reward_claimed`. Fetch the existing `/questions/{id}` endpoint to open the editor.
 Guests receive `null` for completion/reward state; bearer-authenticated users receive
 booleans. Each UTC date is persisted once and shared across users, processes and
@@ -349,13 +349,18 @@ changes do not rotate today's problem. An empty eligible catalog returns 404
 Keep `/questions/featured` for its existing first-in-catalog recommendations; it is
 not a daily challenge.
 
-Coin rules are LustCode's own initial policy:
+LustCode's current coin rules:
 
-- One explicit daily check-in earns 5 coins.
-- A full accepted submission for the day's selected problem earns 20 coins once,
+- One explicit daily check-in earns 1 coin.
+- A full accepted submission for the day's selected problem earns 2 coins once,
   across all languages and retries, even if the user solved that question previously.
 - Ordinary solves, sample runs, custom inputs and playground executions earn 0.
 - No signup bonus, historical backfill or streak multiplier is enabled.
+
+The maximum is 3 coins per UTC reward day. New grants use the current rates; past
+ledger amounts and existing balances are not recalculated. Already-claimed rewards
+remain claimed after a rate change. Read amounts from `/coins/rules`, `wallet.rules`,
+and the daily problem's `reward_coins`; do not hardcode earning amounts in the UI.
 
 The wallet response includes `currency: "LustCoins"`, `balance`, `total_earned`,
 `total_spent`, `total_refunded`, `check_in_claimed_today`, `next_reset_at`, `rules`, and
