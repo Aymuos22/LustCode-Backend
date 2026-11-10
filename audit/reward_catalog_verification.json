@@ -1,6 +1,6 @@
 {
   "date": "2026-11-10",
-  "status": "local_verified_deployment_pending",
+  "status": "passed_local_and_live",
   "products": [
     {
       "id": "premium-condom-pack",
@@ -48,12 +48,34 @@
     "ruff_format": "passed; 115 files",
     "mypy": "passed; 72 application source files",
     "docker_build": "passed",
-    "migration_history_protection": "upgrade with old order and ledger, old checkout replay and refund, new checkout, protected downgrade, empty downgrade/re-upgrade and schema check passed on disposable PostgreSQL16"
+    "migration_history_protection": "upgrade with old order and ledger, old checkout replay and refund, new checkout, protected downgrade, empty downgrade/re-upgrade and schema check passed on disposable PostgreSQL16",
+    "disposable_test_database": "removed",
+    "local_api_worker": "updated; Docker Compose health checks passed"
   },
-  "live_verification": "pending deployment",
+  "live_verification": {
+    "report": "audit/reward_catalog_live.json",
+    "status": "passed",
+    "all_four_products_checkout_retry_and_refund": "passed",
+    "fixture_cleanup": "passed",
+    "database_checks": {
+      "schema_head": "8ae36dc2f109",
+      "active_products": 4,
+      "retired_merchandise_disabled": 4,
+      "temporary_customer_accounts_remaining": 0,
+      "standard_account_balance_unchanged": true
+    }
+  },
   "remaining_limitations": [
     "Physical fulfillment is manual; no courier booking, procurement, notifications or shipment was performed.",
     "New stock quantities are unset for manual/on-demand fulfillment; staff must confirm availability.",
     "Frontend must read the current API catalog; no React files were changed."
-  ]
+  ],
+  "deployment": {
+    "source_commit": "9199feaef623c2f80b3bfc0646c32b71baf54d5d",
+    "github_ci": "passed",
+    "render_deploy": "dep-dbpfbfp42hec73dfbi10",
+    "render_status": "live",
+    "api_base_url": "https://lustcode-backend.onrender.com/api/v1",
+    "paid_resources_created": false
+  }
 }

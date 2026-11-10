@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-11-10T10:46:50.432304+00:00",
+  "status": "passed",
+  "checks": {
+    "exactly_four_requested_products_prices_no_sizes": "passed",
+    "retired_merchandise_cannot_be_ordered": "passed",
+    "premium-condom-pack_checkout_retry_refund": "passed",
+    "water-based-lubricant_checkout_retry_refund": "passed",
+    "body-massage-oil_checkout_retry_refund": "passed",
+    "soft-adjustable-blindfold_checkout_retry_refund": "passed",
+    "wallet_totals_no_duplicate_charges": "passed"
+  },
+  "fixture": "Isolated temporary customer with 4000 synthetic credits; orders cancelled and fixture removed. No shipment or notifications triggered.",
+  "credentials_or_addresses_in_report": false,
+  "temporary_customer_orders_and_ledger_removed": true,
+  "finished_at": "2026-11-10T10:47:20.455393+00:00"
+}
