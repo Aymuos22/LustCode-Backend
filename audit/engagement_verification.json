@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-10",
+  "status": "local_verification_passed_deployment_pending",
+  "features": {
+    "streak": "Existing statistics streak retained; added longest streak and dedicated owned endpoint.",
+    "potd": "Persisted shared UTC daily selection from published, verified judgeable questions.",
+    "coins": {
+      "daily_check_in": 5,
+      "accepted_daily_problem": 20,
+      "ordinary_solve": 0,
+      "sample_custom_playground": 0,
+      "storage": "PostgreSQL append-only credit ledger with per-user event uniqueness; no Redis balance storage"
+    },
+    "redeem": "Four coming-soon placeholders; all prices null; redemption disabled and never deducts coins."
+  },
+  "new_endpoints": [
+    "GET /api/v1/users/me/streak",
+    "GET /api/v1/questions/daily",
+    "GET /api/v1/coins/rules",
+    "GET /api/v1/users/me/coins",
+    "GET /api/v1/users/me/coins/transactions",
+    "POST /api/v1/users/me/coins/check-in",
+    "GET /api/v1/coins/rewards",
+    "POST /api/v1/coins/redeem"
+  ],
+  "verification": {
+    "pytest": {
+      "passed": 380,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 50.0
+    },
+    "new_engagement_tests": 30,
+    "ruff": "passed; 109 files formatted",
+    "mypy": "passed; 70 application files",
+    "migration": "upgrade head; check; downgrade base; upgrade head; check; all passed on disposable PostgreSQL16",
+    "head": "5f5fc6a35eec",
+    "new_tables_rls": [
+      "daily_challenges",
+      "coin_transactions"
+    ],
+    "docker_build": "passed"
+  },
+  "coverage": [
+    "concurrent check-ins issue one credit",
+    "replayed submissions and cross-language repeats issue one POTD reward",
+    "failed, ordinary, and sample/custom/playground executions do not earn rewards",
+    "UTC midnight reset and judging-after-midnight eligibility",
+    "coin and solved progress rollback together on worker failure",
+    "private wallet/history ownership",
+    "valid stable POTD selection excludes unsupported and tampered suites",
+    "longest/current activity streak semantics",
+    "disabled placeholder redemptions preserve balance",
+    "credits survive Redis cache reset"
+  ],
+  "live_checks": "pending new Render deployment",
+  "frontend": "Backend contract and placeholders supplied; React redeem UI remains future work.",
+  "hosting": "Existing free Render API and free Key Value retained; no paid resources."
+}

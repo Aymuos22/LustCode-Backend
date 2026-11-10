@@ -226,6 +226,15 @@ configuration is rejected for `ce.judge0.com`. No RapidAPI credentials are neede
 
 ## API contract
 
+Daily engagement now has a persisted UTC Problem of the Day (`GET /questions/daily`),
+a dedicated activity-streak endpoint (`GET /users/me/streak`), and LustCoins. Daily
+check-in earns 5 coins; a full accepted POTD submission earns 20 once per user/date.
+There are no ordinary-solve or run rewards. PostgreSQL stores an idempotent credit
+ledger; free Redis restarts do not reset balances. The wallet, transaction history,
+earning rules, and four disabled redemption placeholders are documented in the
+frontend handoff. Redemption remains unavailable and never deducts coins. Apply
+`5f5fc6a35eec` and update every API/worker sharing the database before enabling the UI.
+
 The frontend feature handoff is [FRONTEND_API_HANDOFF.md](FRONTEND_API_HANDOFF.md), with
 exact new methods, payloads, filters, draft conflict behavior, and proxy requirements.
 The backend now provides question-specific custom inputs, server topics, stored

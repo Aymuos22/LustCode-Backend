@@ -13,6 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException
 
+from app.api.engagement import router as engagement_router
 from app.api.features import router as features_router
 from app.api.routes import router
 from app.core.config import Settings
@@ -162,6 +163,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         return {"data": {"status": "ready"}}
 
+    app.include_router(engagement_router)
     app.include_router(features_router)
     app.include_router(router)
     return app

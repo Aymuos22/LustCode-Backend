@@ -328,12 +328,12 @@ async def test_concurrent_release_processes_serialize_real_migrations():
             async with engine.connect() as connection:
                 assert (
                     await connection.scalar(text("SELECT version_num FROM alembic_version"))
-                    == "e42b19c06d31"
+                    == "5f5fc6a35eec"
                 )
                 tables = await connection.scalar(
                     text("SELECT count(*) FROM pg_tables WHERE schemaname='public' AND rowsecurity")
                 )
-                assert tables == 9
+                assert tables == 11
         finally:
             await engine.dispose()
     finally:

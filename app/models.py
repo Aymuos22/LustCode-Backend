@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from enum import StrEnum
 from uuid import UUID, uuid4
 
@@ -6,6 +6,7 @@ from sqlalchemy import (
     JSON,
     Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     Enum,
     Float,
@@ -54,6 +55,11 @@ class Verdict(StrEnum):
 class SubmissionMode(StrEnum):
     SUBMIT = "submit"
     RUN = "run"
+
+
+class CoinReason(StrEnum):
+    DAILY_CHECK_IN = "daily_check_in"
+    DAILY_PROBLEM = "daily_problem"
 
 
 def enum_type(enum: type[StrEnum]) -> Enum:
@@ -160,6 +166,11 @@ class Submission(IdentityMixin, Base):
     question_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("questions.id", ondelete="RESTRICT"), index=True
     )
+    daily_challenge_date: Mapped[date | None] = mapped_column(
+        ForeignKey(
+            "daily_challenges.day", ondelete="RESTRICT", name="fk_submissions_daily_challenge"
+        )
+    )
     language: Mapped[Language] = mapped_column(enum_type(Language))
     language_id: Mapped[int] = mapped_column(Integer)
     language_version: Mapped[str] = mapped_column(String(150))
@@ -229,4 +240,31 @@ class UserProgress(IdentityMixin, Base):
     __table_args__ = (
         UniqueConstraint("user_id", "question_id"),
         Index("ix_progress_solved", "solved_at"),
+    )
+
+
+class DailyChallenge(Base):
+    __tablename__ = "daily_challenges"
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    question_id: Mapped[UUID] = mapped_column(ForeignKey("questions.id", ondelete="RESTRICT"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class CoinTransaction(IdentityMixin, Base):
+    __tablename__ = "coin_transactions"
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    amount: Mapped[int] = mapped_column(Integer)
+    reason: Mapped[CoinReason] = mapped_column(enum_type(CoinReason))
+    event_key: Mapped[str] = mapped_column(String(80))
+    reward_date: Mapped[date] = mapped_column(Date)
+    question_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("questions.id", ondelete="RESTRICT")
+    )
+    submission_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("submissions.id", ondelete="SET NULL")
+    )
+    __table_args__ = (
+        UniqueConstraint("user_id", "event_key"),
+        CheckConstraint("amount > 0"),
+        Index("ix_coin_transactions_user_created", "user_id", "created_at"),
     )

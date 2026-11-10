@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Literal
 from uuid import UUID
 
@@ -12,7 +12,7 @@ from pydantic import (
     field_validator,
 )
 
-from app.models import Difficulty, Language, SubmissionMode, Verdict
+from app.models import CoinReason, Difficulty, Language, SubmissionMode, Verdict
 
 
 class Schema(BaseModel):
@@ -307,9 +307,94 @@ class Statistics(Schema):
     by_verdict: dict[str, int]
     daily_activity: dict[str, int]
     current_streak: int = 0
+    longest_streak: int = 0
     acceptance_rate: float = 0
     evaluated_submissions: int = 0
     timezone: Literal["UTC"] = "UTC"
+
+
+class StreakView(Schema):
+    current_streak: int
+    longest_streak: int
+    active_today: bool
+    last_activity_date: date | None
+    daily_activity: dict[str, int]
+    timezone: Literal["UTC"] = "UTC"
+    basis: Literal["graded_submission_activity"] = "graded_submission_activity"
+    next_reset_at: datetime
+
+
+class DailyProblemView(Schema):
+    date: date
+    starts_at: datetime
+    expires_at: datetime
+    timezone: Literal["UTC"] = "UTC"
+    question: QuestionSummary
+    reward_coins: int
+    completed: bool | None
+    reward_claimed: bool | None
+
+
+class CoinRules(Schema):
+    currency: Literal["LustCoins"] = "LustCoins"
+    daily_check_in: int
+    daily_problem: int
+    ordinary_solve: Literal[0] = 0
+    sample_or_custom_run: Literal[0] = 0
+    timezone: Literal["UTC"] = "UTC"
+    redemption_enabled: Literal[False] = False
+
+
+class CoinWallet(Schema):
+    currency: Literal["LustCoins"] = "LustCoins"
+    balance: int
+    total_earned: int
+    total_spent: Literal[0] = 0
+    check_in_claimed_today: bool
+    next_reset_at: datetime
+    rules: CoinRules
+    redemption_enabled: Literal[False] = False
+
+
+class CoinTransactionView(Schema):
+    id: UUID
+    amount: int
+    reason: CoinReason
+    reward_date: date
+    question_id: UUID | None
+    submission_id: UUID | None
+    created_at: datetime
+
+
+class CheckInRequest(Schema):
+    pass
+
+
+class CheckInView(Schema):
+    awarded: bool
+    credited_amount: int
+    transaction: CoinTransactionView
+    wallet: CoinWallet
+
+
+class RewardPlaceholder(Schema):
+    id: str
+    name: str
+    description: str
+    coin_cost: None = None
+    status: Literal["coming_soon"] = "coming_soon"
+    is_placeholder: Literal[True] = True
+    redeemable: Literal[False] = False
+
+
+class RewardCatalog(Schema):
+    currency: Literal["LustCoins"] = "LustCoins"
+    redemption_enabled: Literal[False] = False
+    rewards: list[RewardPlaceholder]
+
+
+class RedeemRequest(Schema):
+    reward_id: str = Field(min_length=1, max_length=60, pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 class LeaderboardEntry(Schema):

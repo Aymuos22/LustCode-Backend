@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError
 from app.models import Difficulty, Question, Submission, SubmissionMode, User, UserProgress, Verdict
-from app.schemas import LeaderboardEntry, Page, ProgressView, Statistics, UserView
+from app.schemas import LeaderboardEntry, Page, ProgressView, Statistics, StreakView, UserView
+from app.services.coins import day_window
 
 
 def current_streak(days: set[date], today: date) -> int:
@@ -18,9 +19,48 @@ def current_streak(days: set[date], today: date) -> int:
     return streak
 
 
+def longest_streak(days: set[date]) -> int:
+    longest = run = 0
+    previous = None
+    for day in sorted(days):
+        run = run + 1 if previous is not None and day == previous + timedelta(days=1) else 1
+        longest = max(longest, run)
+        previous = day
+    return longest
+
+
 class ProfileService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    async def activity(self, user_id: UUID) -> list[tuple[date, int]]:
+        day = cast(func.timezone("UTC", Submission.created_at), Date)
+        rows = await self.session.execute(
+            select(day, func.count())
+            .where(
+                Submission.user_id == user_id,
+                Submission.mode == SubmissionMode.SUBMIT,
+                Submission.created_at <= datetime.now(UTC),
+            )
+            .group_by(day)
+            .order_by(day)
+        )
+        return list(rows.tuples().all())
+
+    async def streak(self, user_id: UUID) -> StreakView:
+        activity = await self.activity(user_id)
+        today = datetime.now(UTC).date()
+        days = {day for day, _ in activity}
+        return StreakView(
+            current_streak=current_streak(days, today),
+            longest_streak=longest_streak(days),
+            active_today=today in days,
+            last_activity_date=max(days) if days else None,
+            daily_activity={
+                str(day): count for day, count in activity if day >= today - timedelta(days=364)
+            },
+            next_reset_at=day_window(today)[1],
+        )
 
     async def public(self, username: str) -> UserView:
         user = await self.session.scalar(
@@ -96,18 +136,7 @@ class ProfileService:
             .tuples()
             .all()
         )
-        date = cast(func.timezone("UTC", Submission.created_at), Date)
-        activity = (
-            await self.session.execute(
-                select(date, func.count())
-                .where(
-                    *filters,
-                    Submission.created_at <= datetime.now(UTC),
-                )
-                .group_by(date)
-                .order_by(date)
-            )
-        ).all()
+        activity = await self.activity(user_id)
         evaluated = sum(
             count
             for status, count in verdicts.items()
@@ -125,6 +154,7 @@ class ProfileService:
                 str(day): count for day, count in activity if day >= today - timedelta(days=364)
             },
             current_streak=current_streak({day for day, _ in activity}, today),
+            longest_streak=longest_streak({day for day, _ in activity}),
             acceptance_rate=round(100 * verdicts.get(Verdict.ACCEPTED, 0) / evaluated, 2)
             if evaluated
             else 0,

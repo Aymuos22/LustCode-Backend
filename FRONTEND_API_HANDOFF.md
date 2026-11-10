@@ -312,6 +312,79 @@ is the current key of an active user. Runtime uploads are Git/Docker ignored.
 
 ## Authoritative statistics
 
+### Streak, daily problem, and LustCoins
+
+All paths below are relative to `/api/v1`. These are backend features; the redeem UI
+can render the reward catalog as disabled placeholder cards for now.
+
+| Endpoint | Authentication | Purpose |
+| --- | --- | --- |
+| `GET /users/me/streak` | Required | Current/longest activity streak and calendar |
+| `GET /questions/daily` | Optional | Shared UTC Problem of the Day and completion state |
+| `GET /coins/rules` | Public | Authoritative earning amounts and redemption capability |
+| `GET /users/me/coins` | Required | Durable balance and today's check-in state |
+| `GET /users/me/coins/transactions?page=1&page_size=20` | Required | Owned credit ledger |
+| `POST /users/me/coins/check-in` | Required | Claim today's five coins once |
+| `GET /coins/rewards` | Public | Coming-soon redemption catalog |
+| `POST /coins/redeem` | Required | Disabled placeholder; never spends coins |
+
+The streak endpoint returns `current_streak`, `longest_streak`, `active_today`,
+`last_activity_date`, `daily_activity`, `next_reset_at`, `timezone: "UTC"`, and
+`basis: "graded_submission_activity"`. Existing statistics also add `longest_streak`.
+As with the existing streak, any graded submission is activity; runs and coin check-ins
+do not extend it. Yesterday's activity retains the current streak until today's UTC
+deadline. Longest streak uses all historical graded activity, not just the 365-day calendar.
+
+`GET /questions/daily` returns `date`, `starts_at`, `expires_at`, `timezone: "UTC"`,
+`question` (the existing `QuestionSummary`), `reward_coins: 20`, `completed`, and
+`reward_claimed`. Fetch the existing `/questions/{id}` endpoint to open the editor.
+Guests receive `null` for completion/reward state; bearer-authenticated users receive
+booleans. Each UTC date is persisted once and shared across users, processes and
+restarts. Only published questions with valid executable suites are eligible. Catalog
+changes do not rotate today's problem. An empty eligible catalog returns 404
+`daily_problem_unavailable`; a subsequently disabled assigned problem returns 409.
+Keep `/questions/featured` for its existing first-in-catalog recommendations; it is
+not a daily challenge.
+
+Coin rules are LustCode's own initial policy:
+
+- One explicit daily check-in earns 5 coins.
+- A full accepted submission for the day's selected problem earns 20 coins once,
+  across all languages and retries, even if the user solved that question previously.
+- Ordinary solves, sample runs, custom inputs and playground executions earn0.
+- No signup bonus, historical backfill, streak multiplier or real redemption is enabled.
+
+The wallet response includes `currency: "LustCoins"`, `balance`, `total_earned`,
+`total_spent: 0`, `check_in_claimed_today`, `next_reset_at`, `rules`, and
+`redemption_enabled: false`. Balances and credits are stored in PostgreSQL, so free
+Redis restarts do not erase them. Never calculate, grant or decrement coins in the
+frontend. Display the server values and refetch the wallet after a terminal submission
+or a successful check-in.
+
+Check-in accepts no body or `{}`. It returns HTTP 200 with `awarded`, `credited_amount`,
+`transaction` and `wallet`. Repeated or simultaneous requests return the same owned
+transaction and `credited_amount: 0`, without adding another credit. Extra fields such
+as `amount`, `date` or `user_id` are rejected 422. The transaction page contains
+`id`, `amount`, `reason` (`daily_check_in` or `daily_problem`), `reward_date`,
+`question_id`, `submission_id` and `created_at`. It never exposes another user's history.
+
+POTD eligibility is captured on server-side graded admission, using the submission's
+UTC creation date. A submission queued before midnight can finish after midnight and
+still earn its original day's reward. Successful grading and coin credit commit in one
+transaction. No frontend claim endpoint is needed for POTD. Refresh its completion
+state and the wallet after Submit; polling a sample Run must not award coins.
+
+The reward catalog has `redemption_enabled: false` and four placeholders: profile
+badges, editor themes, stickers and a T-shirt. Each has `id`, `name`, `description`,
+`coin_cost: null`, `status: "coming_soon"`, `is_placeholder: true`, and
+`redeemable: false`. Display **Coming soon** / **Pricing TBD**, not a zero-coin price.
+Disable purchase/redeem buttons and do not collect shipping or payment information.
+`POST /coins/redeem` accepts `{"reward_id":"profile-badges"}` and returns 409
+`redemption_unavailable`; unknown IDs return 404. Neither path changes the balance.
+
+Apply migration `5f5fc6a35eec` before serving this version. Update every API and worker
+sharing the database together: older evaluators do not issue the new credits.
+
 Authenticated `/users/me/statistics` retains all previous fields and adds:
 
 ```json

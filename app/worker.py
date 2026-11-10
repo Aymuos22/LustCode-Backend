@@ -30,6 +30,7 @@ from app.models import (
 )
 from app.repositories import SubmissionRepository
 from app.runtime import runtime_resources
+from app.services.coins import CoinService
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +91,8 @@ class EvaluationWorker:
             row.completed_at = datetime.now(UTC)
             row.lease_until = None
             if row.mode == SubmissionMode.SUBMIT and row.status == Verdict.ACCEPTED:
+                coins = CoinService(session)
+                await coins.lock_user(row.user_id)
                 await session.execute(
                     update(UserProgress)
                     .where(
@@ -99,6 +102,7 @@ class EvaluationWorker:
                     )
                     .values(solved_at=row.completed_at)
                 )
+                await coins.award_daily_problem(row)
             await session.commit()
 
     async def process(self, submission: Submission) -> None:

@@ -17,6 +17,7 @@ from app.judging.readiness import readiness
 from app.models import Submission, SubmissionMode, SubmissionTestResult, User, UserProgress, Verdict
 from app.repositories import QuestionRepository, SubmissionRepository
 from app.schemas import ResultView, RunRequest, SampleRunRequest, SubmissionView, SubmitRequest
+from app.services.daily import DailyProblemService
 
 logger = logging.getLogger(__name__)
 
@@ -176,6 +177,11 @@ class SubmissionService:
             [SubmissionTestResult(submission_id=submission.id, **test) for test in tests]
         )
         if mode == SubmissionMode.SUBMIT:
+            challenge = await DailyProblemService(self.session, self.settings).ensure(
+                submission.created_at.date()
+            )
+            if challenge is not None and challenge.question_id == question_id:
+                submission.daily_challenge_date = challenge.day
             stmt = insert(UserProgress).values(
                 user_id=user_id,
                 question_id=question_id,
